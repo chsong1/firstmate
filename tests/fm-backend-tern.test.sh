@@ -787,6 +787,18 @@ test_agent_state_classifies_the_foreground_process() {
   out=$( run_tern "$dir" 'fm_backend_tern_agent_state "$1"' "$TARGET" )
   [ "$out" = dead ] || fail "an idle interactive shell foreground should read dead, got '$out'"
 
+  dir=$(new_case agent-dead-shell-rcfile)
+  ls_with_block "$dir" 1
+  process_response "$dir" 2 bash '["/bin/bash","--rcfile","/home/u/.cache/stencil-term/shell-integration/bash/kitty.bash"]'
+  out=$( run_tern "$dir" 'fm_backend_tern_agent_state "$1"' "$TARGET" )
+  [ "$out" = dead ] || fail "an interactive shell started with Tern's --rcfile shell integration should read dead, got '$out'"
+
+  dir=$(new_case agent-ambiguous-shell-rcfile-script)
+  ls_with_block "$dir" 1
+  process_response "$dir" 2 bash '["bash","--init-file","/etc/rc","job.sh"]'
+  out=$( run_tern "$dir" 'fm_backend_tern_agent_state "$1"' "$TARGET" )
+  [ "$out" = ambiguous ] || fail "a shell running a script after an --init-file value should read ambiguous, got '$out'"
+
   dir=$(new_case agent-ambiguous-shell-c)
   ls_with_block "$dir" 1
   process_response "$dir" 2 bash '["bash","-c","sleep 100"]'
@@ -798,7 +810,7 @@ test_agent_state_classifies_the_foreground_process() {
   process_response "$dir" 2 python3 '["python3","job.py"]'
   out=$( run_tern "$dir" 'fm_backend_tern_agent_state "$1"' "$TARGET" )
   [ "$out" = ambiguous ] || fail "an unrelated foreground process should read ambiguous, got '$out'"
-  pass "fm_backend_tern_agent_state: agent foreground -> alive, idle shell -> dead, shell -c / unrelated process -> ambiguous"
+  pass "fm_backend_tern_agent_state: agent foreground -> alive, idle shell (incl. --rcfile) -> dead, shell -c / unrelated process -> ambiguous"
 }
 
 test_agent_state_missing_dead_and_unreadable() {

@@ -611,7 +611,9 @@ fm_backend_tern_classify_submit_state() {  # <raw-state> -> busy|idle|unknown
 # fm_backend_tern_foreground_class: what runs in <session>/<block>'s foreground,
 # from one `tern process --json`:
 #   agent          a verified harness (bin/fm-agent-process-lib.sh)
-#   shell          an interactive shell: no command, script or option value argument
+#   shell          an interactive shell: no command or script argument (the value
+#                  of --rcfile/--init-file, as Tern's shell integration passes, is
+#                  part of its option)
 #   shell-command  a shell given one (`sh -c ...`), which can hold an agent child
 #   other          anything else
 #   none           no foreground process is reported
@@ -628,7 +630,10 @@ fm_backend_tern_foreground_class() {  # <session-id> <block-id>
         | [ (($f.name // "") | tostring | one),
             (($argv[0] // "") | tostring | one),
             ($argv | map(select(type == "string")) | join(" ") | one),
-            ($argv[1:] | map(select(type == "string" and (startswith("-") | not))) | length | tostring)
+            (reduce ($argv[1:][] | select(type == "string")) as $a ({skip: false, n: 0};
+               if .skip then .skip = false
+               elif ($a | startswith("-")) then .skip = ($a == "--rcfile" or $a == "--init-file")
+               else .n += 1 end) | .n | tostring)
           ] | join("\u001f")
       end' 2>/dev/null) || { printf 'unreadable'; return 0; }
   [ -n "$fields" ] || { printf 'unreadable'; return 0; }
