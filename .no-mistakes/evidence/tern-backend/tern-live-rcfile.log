@@ -1,0 +1,13 @@
+--- fresh shell foreground:
+{"name":"bash","argv":["/bin/bash","--rcfile","/home/user/.cache/stencil-term/shell-integration/bash/kitty.bash"]}
+class=shell agent_state=dead
+PASS: plain integration shell -> shell/dead
+--- nested bash --init-file X foreground:
+{"name":"bash","argv":["bash","--init-file","/dev/null"]}
+class=shell agent_state=dead
+PASS: --init-file value treated as option -> dead
+--- bash --rcfile X -c CMD foreground:
+{"name":"bash","argv":["bash","--rcfile","/dev/null","-c","sleep 120; true"]}
+class=shell-command agent_state=ambiguous
+PASS: rcfile + -c command stays shell-command (not dead)
+FAILS=0

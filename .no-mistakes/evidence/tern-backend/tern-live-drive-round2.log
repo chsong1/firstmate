@@ -1,0 +1,90 @@
+
+=== container_ensure creates session fm-test-live-1972312 (lab FM_HOME=/tmp/fm-lab.6ohUUt)
+PASS: session id 1498943586305
+{"id":"1498943586305","name":"fm-test-live-1972312","tabs":[{"id":"1498943586306","name":null}]}
+
+=== create_task fm-livetask (keep-open tab renamed to scoped title, read back)
+scoped title: fm-firstmate-a3546b98-livetask
+target=1498943586305:1516123455490 tab=1516123455489
+listed: 1498943586305 fm-firstmate-a3546b98-livetask
+PASS: tab title pinned to fm-firstmate-a3546b98-livetask after rename
+PASS: target_exists with label
+PASS: target_exists refuses wrong label
+
+=== duplicate create_task for the same label refuses
+error: tern tab 'fm-firstmate-a3546b98-livetask' already exists in session 'fm-test-live-1972312'
+PASS: duplicate refused
+
+=== send_literal + send_key Enter, send_text_line, capture/visible_capture
+user@calserver:/tmp/fm-lab.6ohUUt$ echo literal-then-key-tern
+literal-then-key-tern
+user@calserver:/tmp/fm-lab.6ohUUt$ echo composed-line-tern
+composed-line-tern
+user@calserver:/tmp/fm-lab.6ohUUt$
+PASS: capture shows both sent lines' output
+PASS: visible_capture shows latest line
+PASS: key Escape accepted by real tern
+PASS: key C-c accepted by real tern
+PASS: key C-u accepted by real tern
+PASS: key Enter accepted by real tern
+
+=== current_path, agent_state, busy_state, native_state (no ctl window on this host)
+current_path=/tmp
+agent_state=dead busy_state=unknown native_state=unknown
+PASS: shell-only block reads dead
+PASS: ctl failure degrades to unknown, not an error
+
+=== list_live discovers the task by title
+1498943586305:1516123455490	fm-livetask
+
+=== ADVERSARIAL: rename the task tab out from under firstmate, then kill
+listed after rename: 1498943586305 hand-renamed-by-user
+send> send-failederror: tern block 1516123455490 in session 1498943586305 is no longer in a tab titled fm-firstmate-a3546b98-livetask, so it cannot be verified as this task's endpoint; not closing it
+fm_backend_kill rc=1
+PASS: kill refused (nonzero) for renamed tab
+PASS: renamed block still open (nothing closed)
+PASS: list_live no longer claims the renamed tab
+
+=== Real fm-teardown.sh on a lab task record whose tab was renamed
+complete: livetask captain-call inventory reviewed
+captain-hold complete rc=0
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.6ohUUt
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+●  1 task(s) in flight, but no watcher has a fresh beacon (last beat: never, grace 300s).
+●  Trust the emitted supervision protocol for this harness; do not use shell & for watcher repair.
+●  This is a supervision warning only; the guarded operation WILL still run.
+●  watcher supervision needs Stop-owned automatic recovery; inspect the hook registration and startup status before ending the turn.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+error: tern block 1516123455490 in session 1498943586305 is no longer in a tab titled fm-firstmate-a3546b98-livetask, so it cannot be verified as this task's endpoint; not closing it
+error: the tern endpoint 1498943586305:1516123455490 for livetask could not be closed, so it may still be live.
+error: stopping this cleanup without removing the task's records, so the record naming 1498943586305:1516123455490 is still here to reconcile from.
+error: that retention is not durable across a session start: if this task carries a backlog transition, the next session replays its pending close and removes the retained record, so reconcile the surviving endpoint yourself rather than trusting the retention.
+error: rerun teardown once the close can succeed, or rerun with --force to discard this task's records deliberately.
+fm-teardown rc=1
+livetask.meta
+PASS: teardown refused and kept livetask.meta
+PASS: block survives refused teardown
+
+=== Restore scoped title; teardown now closes the block and removes the record
+listed: 1498943586305 fm-firstmate-a3546b98-livetask
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.6ohUUt
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+teardown livetask complete (window 1498943586305:1516123455490, worktree /tmp/fm-lab.6ohUUt/gone-worktree)
+Backlog: livetask just finished (this home keeps no markdown backlog at /tmp/fm-lab.6ohUUt/data/backlog.md). Update /tmp/fm-lab.6ohUUt/data/backlog.md - move livetask to Done, keep Done to the 10 most recent, then re-scan Queued and dispatch only work whose blockers are gone and date is due.
+fm-teardown rc=0
+home-summary.json
+terminal-outcomes
+PASS: block closed by teardown
+PASS: meta removed after verified close
+PASS: repeat kill of gone block returns 0
+
+=== ADVERSARIAL: kill with a target whose block lives in a different (second fm-test) session refuses
+error: tern block 1743756722178 is no longer in session 1498943586305, so it cannot be verified as this task's endpoint; not closing it
+rc=1; block 1743756722178 still listed: 1730871820289 fm-firstmate-a3546b98-other
+PASS: moved block refused, untouched
+PASS: second session cleaned via guard
+error: refusing to close malformed tern target '1/2'
+PASS: malformed target refused
+
+FAILS=0
