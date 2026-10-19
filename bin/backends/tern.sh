@@ -843,8 +843,8 @@ fm_backend_tern_send_text_submit() {  # <target> <text> <retries> <enter-sleep> 
 # still be live, so the caller keeps the durable records that name it: an
 # unreadable inventory, a block that now lives in another session, a block
 # still in the recorded session whose tab no longer carries the task's title,
-# or one still listed after a failed close. Closing a task block's only block closes its tab; the home session's
-# seed tab keeps the session open.
+# or one still listed after a failed close. Closing a task block's only block
+# closes its tab; the home session's seed tab keeps the session open.
 fm_backend_tern_kill() {  # <target> [unused] [expected-label]
   local expected_label=${3:-} want='' state kind
   if ! fm_backend_tern_parse_target "${1:-}"; then
