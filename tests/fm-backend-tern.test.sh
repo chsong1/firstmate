@@ -920,14 +920,15 @@ test_kill_refuses_a_block_that_moved_to_another_session() {
   pass "fm_backend_tern_kill: refuses (and closes nothing) when the block id now belongs to another session"
 }
 
-test_kill_with_foreign_label_closes_nothing() {
-  local dir
+test_kill_refuses_a_block_whose_tab_was_renamed() {
+  local dir status
   dir=$(new_case kill-label-mismatch)
   ls_with_block "$dir" 1 40 true "not-the-task"
   run_tern "$dir" 'fm_backend_tern_kill "$1" "" fm-label' "$TARGET" >/dev/null 2>&1
-  expect_code 0 $? "kill of a block that is not this task's must be a harmless success"
+  status=$?
+  [ "$status" -ne 0 ] || fail "kill must not claim success for a still-listed block whose tab no longer carries the task's title"
   assert_not_contains "$(cat "$dir/log")" "${US}close${US}" "kill must not close a block whose tab is not the expected task's"
-  pass "fm_backend_tern_kill: a block titled for a different task is left open"
+  pass "fm_backend_tern_kill: refuses (and closes nothing) when the block's tab no longer carries the task's title"
 }
 
 # --- list_live -----------------------------------------------------------------------------------------------
@@ -1593,7 +1594,7 @@ test_kill_is_idempotent_when_block_is_gone
 test_kill_refuses_to_guess_when_the_inventory_is_unreadable
 test_kill_distinguishes_failed_close_from_gone
 test_kill_refuses_a_block_that_moved_to_another_session
-test_kill_with_foreign_label_closes_nothing
+test_kill_refuses_a_block_whose_tab_was_renamed
 test_list_live_lists_only_this_homes_task_tabs
 test_dispatch_visible_capture_routes_tern
 test_dispatch_target_exists_routes_tern
