@@ -39,7 +39,8 @@ export FM_BACKEND_CMUX_BUNDLE_BIN="$TMP_ROOT/no-bundled-cmux"
 # them once so the suite resolves the tmux reference backend unless a case says
 # otherwise - the same hermeticity discipline as pinning PATH via BASE_PATH.
 unset TMUX TMUX_PANE HERDR_ENV HERDR_PANE_ID HERDR_SESSION HERDR_SOCKET_PATH PASEO_AGENT_ID __CFBundleIdentifier \
-  CMUX_WORKSPACE_ID CMUX_SURFACE_ID CMUX_SOCKET_PATH CMUX_TAB_ID CMUX_PANEL_ID 2>/dev/null || true
+  CMUX_WORKSPACE_ID CMUX_SURFACE_ID CMUX_SOCKET_PATH CMUX_TAB_ID CMUX_PANEL_ID \
+  TERN_PANE TERN_PANE_SOCKET TERN_WINDOW_KEY 2>/dev/null || true
 
 # A case that simulates a tool as absent removes it from the fake bin directory,
 # which is not enough on its own: bootstrap keeps searching the fallback
@@ -703,6 +704,7 @@ herdr^herdr
 zellij^zellij
 cmux^cmux
 rex^rex
+tern^tern
 ROWS
   pass "bootstrap: session-provider backends require their own CLI + jq + treehouse, never tmux"
 }
@@ -726,11 +728,12 @@ test_session_provider_backends_gate_own_cli_not_tmux() {
       herdr) missing="MISSING_MANUAL: herdr (instructions: https://herdr.dev)" ;;
       paseo) missing="MISSING_MANUAL: paseo (instructions: https://paseo.sh)" ;;
       rex) missing="MISSING_MANUAL: rex (instructions: https://www.superlogical.com/rex)" ;;
+      tern) missing="MISSING_MANUAL: tern (instructions: https://stencil.so/tern)" ;;
       *) missing="MISSING: $cli" ;;
     esac
     assert_contains "$out" "$missing" "backend=$backend must fail closed on its own missing session CLI"
     case "$backend" in
-      herdr|paseo|rex)
+      herdr|paseo|rex|tern)
         assert_not_contains "$out" "MISSING: $backend (install:" \
           "backend=$backend must not advertise manual guidance as an executable install command"
         ;;
@@ -742,6 +745,7 @@ zellij^zellij
 cmux^cmux
 paseo^paseo
 rex^rex
+tern^tern
 ROWS
   pass "bootstrap: a session-provider backend gates its own CLI, never a false tmux requirement"
 }
@@ -780,7 +784,7 @@ test_unknown_backend_reports_invalid_configuration() {
   fakebin=$(make_fake_toolchain "$case_dir")
   out=$(PATH="$fakebin:$BASE_PATH" FM_HOME="$case_dir/home" FM_ROOT_OVERRIDE="$case_dir/home" \
     FM_FAKE_TREEHOUSE_LEASE_HELP=1 "$ROOT/bin/fm-bootstrap.sh")
-  assert_contains "$out" "BACKEND_INVALID: bogus (known: tmux herdr zellij orca cmux paseo rex t3code)" \
+  assert_contains "$out" "BACKEND_INVALID: bogus (known: tmux herdr zellij orca cmux paseo rex t3code tern)" \
     "bootstrap should report an unknown resolved backend"
   assert_not_contains "$out" "MISSING: tmux" "an unknown backend should not silently fall back to tmux dependencies"
   pass "bootstrap: unknown resolved backends fail closed with an actionable diagnostic"
@@ -822,6 +826,7 @@ SH
 herdr
 zellij
 cmux
+tern
 ROWS
   pass "bootstrap: JSON-emitting backends require jq (their genuine dep), never tmux"
 }
