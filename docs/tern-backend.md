@@ -145,7 +145,7 @@ Successful `ctl` agent entries are **not** live-verified here.
 `current_path` is passive: it reads `tern process` `foreground.cwd` and returns empty on failure rather than probing with shell markers.
 
 Kill closes the task block with `tern close <session>/<block>`.
-It returns 0 when the block is already gone or not ours, and returns 1 with stderr when inventory is unreadable, the block moved sessions, or the block is still present after a failed close.
+It returns 0 when the block is already gone, and returns 1 with stderr (closing nothing, so teardown keeps the task records) when inventory is unreadable, the block moved sessions, the block is still in the recorded session but its tab no longer carries the task's scoped title, or the block is still present after a failed close.
 
 Real tests may share the captain's running Tern daemon rather than inventing an isolated window.
 `tests/tern-test-safety.sh` permits cleanup only for a currently listed session whose name carries the `fm-test-` prefix and whose id the test created.

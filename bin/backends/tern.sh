@@ -833,12 +833,12 @@ fm_backend_tern_send_text_submit() {  # <target> <text> <retries> <enter-sleep> 
 # --- teardown and discovery -----------------------------------------------------
 
 # fm_backend_tern_kill: close the task's block, best-effort in the way every
-# adapter's kill is: a target that is already gone, or whose id no longer
-# belongs to this task's tab, returns 0 and is not touched. A nonzero return
-# means the close could not be proven and the endpoint may still be live, so the
-# caller keeps the durable records that name it: an unreadable inventory, a
-# block that now lives in another session, or one still listed after a failed
-# close. Closing a task block's only block closes its tab; the home session's
+# adapter's kill is: a target that is already gone returns 0 and is not touched.
+# A nonzero return means the close could not be proven and the endpoint may
+# still be live, so the caller keeps the durable records that name it: an
+# unreadable inventory, a block that now lives in another session, a block
+# still in the recorded session whose tab no longer carries the task's title,
+# or one still listed after a failed close. Closing a task block's only block closes its tab; the home session's
 # seed tab keeps the session open.
 fm_backend_tern_kill() {  # <target> [unused] [expected-label]
   local expected_label=${3:-} want='' state kind
@@ -850,8 +850,12 @@ fm_backend_tern_kill() {  # <target> [unused] [expected-label]
   state=$(fm_backend_tern_endpoint_state "$FM_BACKEND_TERN_SESSION_ID" "$FM_BACKEND_TERN_BLOCK_ID" "$want")
   kind=${state%%$'\t'*}
   case "$kind" in
-    absent|renamed) return 0 ;;
+    absent) return 0 ;;
     ready) ;;
+    renamed)
+      echo "error: tern block $FM_BACKEND_TERN_BLOCK_ID in session $FM_BACKEND_TERN_SESSION_ID is no longer in a tab titled $want, so it cannot be verified as this task's endpoint; not closing it" >&2
+      return 1
+      ;;
     moved)
       echo "error: tern block $FM_BACKEND_TERN_BLOCK_ID is no longer in session $FM_BACKEND_TERN_SESSION_ID, so it cannot be verified as this task's endpoint; not closing it" >&2
       return 1
