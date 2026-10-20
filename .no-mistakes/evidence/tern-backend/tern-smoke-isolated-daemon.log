@@ -1,0 +1,13 @@
+ok - real tern: container_ensure creates the fm-test- session, returns its exact id, and is idempotent
+ok - real tern: the safety guard refuses non-fm-test names, mismatched names and empty ids
+ok - real tern: create_task opens a keep-open tab in the fm-test- session, and target_exists verifies block and label
+ok - real tern: send_literal + send_key Enter submit as two steps and the output is capturable with --surfaces
+ok - real tern: send_text_line (tern run) composes text and Enter in one call
+ok - real tern: visible_capture reads the viewport
+ok - real tern: send_key Escape, C-c, C-u and Enter are all accepted chords
+ok - real tern: current_path reads the foreground process cwd
+ok - real tern: agent_state classifies a shell-only block as dead
+ok - real tern: busy_state/native_state answer in the shared vocabulary through the live control endpoint (busy=unknown native=unknown)
+ok - real tern: kill closes exactly the task block, then target_exists is false, agent_state is missing, and a repeat kill succeeds
+ok - real tern: list_live discovers a live task block by its fm-<id> title
+not ok - the guarded cleanup left the fm-test- session behind

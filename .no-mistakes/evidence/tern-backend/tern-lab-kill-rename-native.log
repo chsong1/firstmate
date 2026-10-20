@@ -1,0 +1,39 @@
+== tern tern 0.9.4 (b9ef74c); daemon socket /tmp/fm-tern-lab.1mBq7h/d.sock (isolated lab)
+container_ensure -> 326417514497
+{"id":326417514497,"name":"fm-test-lab-1346298","tabs":[{"id":326417514498,"name":null,"blocks":[326417514499]}]}
+create_task fm-alpha -> tab=343597383681 block=343597383682
+create_task fm-beta -> tab=360777252865 block=360777252866
+{"id":326417514497,"name":"fm-test-lab-1346298","tabs":[{"id":326417514498,"name":null,"blocks":[326417514499]},{"id":343597383681,"name":"fm-firstmate-5efbf688-alpha","blocks":[343597383682]},{"id":360777252865,"name":"fm-firstmate-5efbf688-beta","blocks":[360777252866]}]}
+-- duplicate create_task fm-alpha (must refuse):
+error: tern tab 'fm-firstmate-5efbf688-alpha' already exists in session 'fm-test-lab-1346298'
+rc=1
+-- busy_state/native_state with no Tern window (ctl unavailable):
+tern ctl state: tern: /tmp/tern.sock: No such file or directory (os error 2) (is `tern serve` running?) rc=0
+native_state=unknown busy_state=unknown agent_state=dead
+-- user renames fm-alpha's tab by hand, then teardown kills with label fm-alpha:
+{"id":326417514497,"name":"fm-test-lab-1346298","tabs":[{"id":326417514498,"name":null,"blocks":[326417514499]},{"id":343597383681,"name":"my-own-name","blocks":[343597383682]},{"id":360777252865,"name":"fm-firstmate-5efbf688-beta","blocks":[360777252866]}]}
+error: tern block 343597383682 in session 326417514497 is no longer in a tab titled fm-firstmate-5efbf688-alpha, so it cannot be verified as this task's endpoint; not closing it
+kill rc=1 (expect 1, block kept)
+block 343597383682 still open: yes
+-- target_exists with label on renamed tab: false
+-- wrong label against fm-beta (mismatch → renamed, refuse):
+error: tern block 360777252866 in session 326417514497 is no longer in a tab titled fm-firstmate-5efbf688-alpha, so it cannot be verified as this task's endpoint; not closing it
+kill rc=1
+-- block of another session (moved): kill 326417514497:<other session block>
+error: tern block 425201762307 is no longer in session 326417514497, so it cannot be verified as this task's endpoint; not closing it
+kill rc=1 (expect 1)
+-- malformed target: 
+error: refusing to close malformed tern target '326417514497/360777252866'
+rc=1
+-- correct label kill of fm-beta:
+kill rc=0 (expect 0)
+{"id":326417514497,"name":"fm-test-lab-1346298","tabs":[{"id":326417514498,"name":null,"blocks":[326417514499]},{"id":343597383681,"name":"my-own-name","blocks":[343597383682]}]}
+-- repeat kill on gone block: 
+rc=0
+-- list_live:
+
+-- operator restores the tab title; kill now proceeds:
+kill rc=0
+{"id":326417514497,"name":"fm-test-lab-1346298","tabs":[{"id":326417514498,"name":null,"blocks":[326417514499]}]}
+-- cleanup
+[{"name":"fm-test-smoke-1341043","ntabs":0}]
