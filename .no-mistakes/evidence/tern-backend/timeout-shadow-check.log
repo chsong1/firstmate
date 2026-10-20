@@ -1,0 +1,13 @@
+[45dd50a] mechanism=timeout
+SHADOW timeout called: -k 1 1 bash -c 
+    status_file=$1
+    shift
+    "$@"
+    command_rc=$?
+    printf "%s\n" "$command_rc" > "$status_file"
+    exit "$command_rc"
+   _ /tmp/fm-timeout-status.vLWWhe sleep 5
+/home/user/.no-mistakes/evidence/01M5BE8SXXAV3E0WQ4XN4E59FT/timeout-shadow-check.sh: line 4: -k: command not found
+[45dd50a] fm_run_timed 1 sleep 5 -> rc=127 elapsed=0.0s
+[c3ef5fae] mechanism=timeout
+[c3ef5fae] fm_run_timed 1 sleep 5 -> rc=124 elapsed=1.0s

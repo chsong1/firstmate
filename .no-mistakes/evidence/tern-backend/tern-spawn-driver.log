@@ -1,0 +1,26 @@
+## spawn
+warning: /home/user/.no-mistakes/worktrees/acac604291fd/01M5BE8SXXAV3E0WQ4XN4E59FT/.ternlab.fy7f/spawn/home/data/ternlive-a1/launch-brief.md records no ship branch; defaulting to legacy branch fm/ternlive-a1
+warning: /home/user/.no-mistakes/worktrees/acac604291fd/01M5BE8SXXAV3E0WQ4XN4E59FT/.ternlab.fy7f/spawn/home/data/ternlive-a1/launch-brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches
+spawned ternlive-a1 harness=codex kind=ship mode=no-mistakes yolo=off window=377957122049:390842023938 worktree=/home/user/.treehouse/project-1c9f2d/1/project
+spawn rc=0
+## meta
+window=377957122049:390842023938
+endpoint_task_id=ternlive-a1
+backend=tern
+tern_session_id=377957122049
+tern_tab_id=390842023937
+tern_block_id=390842023938
+## tern inventory
+{"id":"8589934593","name":"fm-test-lab-424027","tabs":[{"id":"8589934594","name":null,"blocks":[{"id":"8589934595","keep_open":false,"cwd":"/home/user/.no-mistakes/worktrees/acac604291fd/01M5BE8SXXAV3E0WQ4XN4E59FT"}]},{"id":"21474836481","name":"fm-firstmate-59dff5a8-alpha","blocks":[{"id":"21474836482","keep_open":true,"cwd":"/tmp"}]}]}
+{"id":"128849018881","name":"fm-test-lab-other-424027","tabs":[{"id":"128849018882","name":null,"blocks":[{"id":"128849018883","keep_open":false,"cwd":"/home/user/.no-mistakes/worktrees/acac604291fd/01M5BE8SXXAV3E0WQ4XN4E59FT"}]}]}
+{"id":"193273528321","name":"fm-test-spawnlive-429701","tabs":[{"id":"193273528322","name":null,"blocks":[{"id":"193273528323","keep_open":false,"cwd":"/home/user/.no-mistakes/worktrees/acac604291fd/01M5BE8SXXAV3E0WQ4XN4E59FT/tests"}]},{"id":"206158430209","name":"fm-firstmate-59dff5a8-ternlive-a1","blocks":[{"id":"206158430210","keep_open":true,"cwd":"/home/user"}]}]}
+{"id":"377957122049","name":"fm-test-spawnlive-436473","tabs":[{"id":"377957122050","name":null,"blocks":[{"id":"377957122051","keep_open":false,"cwd":"/home/user/.no-mistakes/worktrees/acac604291fd/01M5BE8SXXAV3E0WQ4XN4E59FT/tests"}]},{"id":"390842023937","name":"fm-firstmate-59dff5a8-ternlive-a1","blocks":[{"id":"390842023938","keep_open":true,"cwd":"/home/user/.no-mistakes/worktrees/acac604291fd/01M5BE8SXXAV3E0WQ4XN4E59FT/.ternlab.fy7f/spawn/project"}]}]}
+## block capture
+🌳 Entered worktree at ~/.treehouse/project-1c9f2d/1/project. Type 'exit' to return.
+user@calserver:~/.treehouse/project-1c9f2d/1/project$ cd -- '/home/user/.treehouse/project-1c9f2d/1/project'
+user@calserver:~/.treehouse/project-1c9f2d/1/project$ export GOTMPDIR=/tmp/fm-ternlive-a1/gotmp
+user@calserver:~/.treehouse/project-1c9f2d/1/project$ export COMPACT_ADVISER_DISABLE=1
+user@calserver:~/.treehouse/project-1c9f2d/1/project$ export FM_TASK_ID=ternlive-a1
+user@calserver:~/.treehouse/project-1c9f2d/1/project$ . '/tmp/fm-ternlive-a1+ba6432e6fac39eefd3cbafd529e9eff809264ee5959d20eb1aa82171423110a5/launch.s1792459442.436533.2287.sh'
+env: ‘codex’: No such file or directory
+user@calserver:~/.treehouse/project-1c9f2d/1/project$

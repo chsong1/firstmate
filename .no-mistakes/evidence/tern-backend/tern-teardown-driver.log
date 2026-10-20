@@ -1,0 +1,23 @@
+## A: captain renames the task tab, then teardown
+tab now: [{"tab":"390842023937","name":"captain-scratch"}]
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /home/user/.no-mistakes/worktrees/acac604291fd/01M5BE8SXXAV3E0WQ4XN4E59FT/.ternlab.fy7f/spawn/home
+teardown: reaping leaked worktree process(es) for ternlive-a1: 437024 440718
+teardown: force-killing leaked worktree process(es) for ternlive-a1: 437024
+error: tern block 390842023938 in session 377957122049 is no longer in a tab titled fm-firstmate-59dff5a8-ternlive-a1, so it cannot be verified as this task's endpoint; not closing it
+error: the tern endpoint 377957122049:390842023938 for ternlive-a1 could not be closed, so it may still be live.
+error: stopping this cleanup without removing the task's records, so the record naming 377957122049:390842023938 is still here to reconcile from.
+error: that retention is not durable across a session start: if this task carries a backlog transition, the next session replays its pending close and removes the retained record, so reconcile the surviving endpoint yourself rather than trusting the retention.
+error: rerun teardown once the close can succeed, or rerun with --force to discard this task's records deliberately.
+teardown rc=1
+block after: [{"tab":"390842023937","name":"captain-scratch"}]
+/home/user/.no-mistakes/worktrees/acac604291fd/01M5BE8SXXAV3E0WQ4XN4E59FT/.ternlab.fy7f/spawn/home/state/ternlive-a1.meta
+meta retained
+## B: tab title restored, teardown again
+tab now: [{"tab":"390842023937","name":"fm-firstmate-59dff5a8-ternlive-a1"}]
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /home/user/.no-mistakes/worktrees/acac604291fd/01M5BE8SXXAV3E0WQ4XN4E59FT/.ternlab.fy7f/spawn/home
+/home/user/.no-mistakes/worktrees/acac604291fd/01M5BE8SXXAV3E0WQ4XN4E59FT/.ternlab.fy7f/spawn/project: already current
+teardown ternlive-a1 complete (window 377957122049:390842023938, worktree /home/user/.treehouse/project-1c9f2d/1/project)
+Backlog: ternlive-a1 just finished (this home keeps no markdown backlog at /home/user/.no-mistakes/worktrees/acac604291fd/01M5BE8SXXAV3E0WQ4XN4E59FT/.ternlab.fy7f/spawn/home/data/backlog.md). Update /home/user/.no-mistakes/worktrees/acac604291fd/01M5BE8SXXAV3E0WQ4XN4E59FT/.ternlab.fy7f/spawn/home/data/backlog.md - move ternlive-a1 to Done, keep Done to the 10 most recent, then re-scan Queued and dispatch only work whose blockers are gone and date is due.
+teardown rc=0
+block after: []
+ls: cannot access '/home/user/.no-mistakes/worktrees/acac604291fd/01M5BE8SXXAV3E0WQ4XN4E59FT/.ternlab.fy7f/spawn/home/state/ternlive-a1.meta': No such file or directory

@@ -1,0 +1,39 @@
+## S1 container + task creation
+PASS - container_ensure -> session id 8589934593
+target=8589934593:21474836482 tab=21474836481
+{"name":"fm-test-lab-424027","tabs":[{"id":"8589934594","name":null,"blocks":[{"id":"8589934595","keep_open":false}]},{"id":"21474836481","name":"fm-firstmate-59dff5a8-alpha","blocks":[{"id":"21474836482","keep_open":true}]}]}
+PASS - target_exists with label fm-alpha
+PASS - target_exists refuses wrong label fm-other
+PASS - duplicate create of fm-alpha refused: error: tern tab 'fm-firstmate-59dff5a8-alpha' already exists in session 'fm-test-lab-424027'
+## S2 send + capture
+user@calserver:/tmp$ echo hello-from-firstmate-tern
+hello-from-firstmate-tern
+user@calserver:/tmp$
+PASS - capture shows sent line
+PASS - send_key Escape/C-c accepted
+PASS - current_path=/tmp
+## S3 native state degrades without a window ctl endpoint
+native=unknown busy=unknown agent=dead
+PASS - native_state=unknown, busy_state=unknown (no hard error)
+## S4 kill refuses a renamed task tab (user decision review-1)
+{"id":"21474836481","name":"captain-renamed-this"}
+kill rc=1 stderr: error: tern block 21474836482 in session 8589934593 is no longer in a tab titled fm-firstmate-59dff5a8-alpha, so it cannot be verified as this task's endpoint; not closing it
+PASS - renamed tab: kill rc=1, block 21474836482 still open
+## S5 kill refuses a block from another session / malformed target
+other session id=128849018881
+kill rc=1 stderr: error: tern block 21474836482 is no longer in session 128849018881, so it cannot be verified as this task's endpoint; not closing it
+PASS - cross-session target refused
+malformed rc=1 error: refusing to close malformed tern target 'abc:1;rm'
+PASS - malformed target refused
+## S6 kill happy path + idempotent absent
+list_live:
+8589934593:21474836482	fm-alpha
+8589934593:146028888066	fm-beta
+PASS - list_live finds fm-beta
+PASS - kill closed fm-beta block 146028888066
+PASS - repeat kill of absent block returns 0
+PASS - agent_state=missing after kill
+## final inventory
+{"id":"8589934593","name":"fm-test-lab-424027","tabs":[{"name":null,"blocks":["8589934595"]},{"name":"fm-firstmate-59dff5a8-alpha","blocks":["21474836482"]}]}
+{"id":"128849018881","name":"fm-test-lab-other-424027","tabs":[{"name":null,"blocks":["128849018883"]}]}
+FAILS=0
