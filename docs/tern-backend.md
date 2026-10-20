@@ -101,8 +101,18 @@ Submit confirmation prefers a native idle baseline followed by a landed-turn sig
 
 Native agent state (desktop window control endpoint only) is read through bounded `tern ctl` calls (`FM_BACKEND_TERN_CTL_TIMEOUT`, default 5s):
 
-1. `tern ctl carly lua 'return tern.json.encode(cx.agents:list())'`
+1. `tern ctl carly lua "$FM_BACKEND_TERN_AGENTS_LUA"`, which stores the answer of this projection of the window's agent list:
+
+   ```lua
+   local out = {} for _, a in ipairs(cx.agents:list()) do table.insert(out, {pane = a.pane, session = a.session, tab = a.tab, host = a.host, state = a.state, alive = a.alive, busy = a.busy, program = a.program}) end return tern.json.encode(out)
+   ```
+
 2. `tern ctl state` → `.carly.last_tool.text`, stripping a leading `→` and any fresh-Lua-state banner
+
+Carly's answer slot holds the text Carly displays for the program's result, not a JSON document the adapter controls.
+In that displayed text the free text of an agent entry (`last_message`, `title`, `running.line`, `last.line`) carries raw newlines and other control characters, which a JSON string may not contain, so a single multi-line message makes the whole array unparseable.
+The projection therefore asks for ids, the state word, booleans, and two short names (`host`, `program`) only, and must never be extended with a field that can hold text a human or a model wrote.
+The ids in the answer are quoted like every other tern id, and the displayed answer is never repaired: one that does not parse reads `unknown`.
 
 `native_state` keeps Tern's own words: `working` | `idle` | `waiting_input` | `unknown`.
 Each agent entry's `pane` equals the block id.
@@ -138,7 +148,7 @@ The adapter never prints `unverified` itself.
 When `tern ctl` fails (no window, headless, remote pane without a local window, timeout), native paths return `unknown` and fall through to screen classification; they do not error the backend.
 A first failing `ctl` call skips the second.
 On this host, both `tern ctl state` and `tern ctl carly lua ...` fail immediately with `{"ok":false,"error":"no Tern window on this machine shows this pane"}`.
-Successful `ctl` agent entries are **not** live-verified here.
+No successful `ctl` agent read was possible on this host.
 
 ### Path, kill, and test safety
 

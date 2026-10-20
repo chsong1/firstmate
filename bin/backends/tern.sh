@@ -64,16 +64,24 @@
 # text, that `tern rename` stays pinned, and whether creating a session or tab
 # moves an attached window's focus (no focus restore is attempted).
 #
-# Native agent state (desktop window only): `tern ctl carly lua 'return
-# tern.json.encode(cx.agents:list())'` stores the answer and `tern ctl state`
-# returns it at .carly.last_tool.text as "→ <json array>". Each entry's `pane`
-# is the block id and `state` is working|idle|waiting_input. Both calls run
-# under fm_run_timed with FM_BACKEND_TERN_CTL_TIMEOUT (default 5s), so a hung
-# window cannot hold a caller; any failure, timeout, non-ok reply, malformed
-# answer or missing entry degrades to `unknown` and the shared screen
-# classifier, and never errors. A first failing call skips the second.
+# Native agent state (desktop window only): `tern ctl carly lua
+# "$FM_BACKEND_TERN_AGENTS_LUA"` has Carly run that Lua program and store its
+# answer, and `tern ctl state` returns it at .carly.last_tool.text as "→ <json
+# array>". Each entry's `pane` is the block id and `state` is
+# working|idle|waiting_input. Both calls run under fm_run_timed with
+# FM_BACKEND_TERN_CTL_TIMEOUT (default 5s), so a hung window cannot hold a
+# caller; any failure, timeout, non-ok reply, malformed answer or missing entry
+# degrades to `unknown` and the shared screen classifier, and never errors. A
+# first failing call skips the second.
 # Multiplexers swallow the protocol: a tmux or herdr hosted inside a Tern block
 # never shows native state, which is why fm_backend_detect prefers them.
+#
+# Carly's answer slot is display text: free-text fields can contain raw newlines
+# and control characters that make the displayed JSON invalid. Request only the
+# safe-field projection in FM_BACKEND_TERN_AGENTS_LUA; never request last_message,
+# title, running.line, last.line, or other free text. Malformed answers are not
+# repaired: fm_backend_tern_agents_json fails and callers read `unknown`.
+# Keep fm_backend_tern_quote_ids before jq to preserve 64-bit numeric ids.
 #
 # busy_state prints busy|idle|blocked|unknown: working is busy, idle is idle,
 # waiting_input is blocked (Tern's word for an agent waiting on the human, the
@@ -139,8 +147,9 @@ FM_BACKEND_TERN_MIN_MAJOR=0
 FM_BACKEND_TERN_MIN_MINOR=9
 FM_BACKEND_TERN_MIN_PATCH=4
 
-# The Lua program whose answer `tern ctl state` returns (see the header).
-FM_BACKEND_TERN_AGENTS_LUA='return tern.json.encode(cx.agents:list())'
+# Request only safe agent fields; the header owns the display-text constraint.
+# The native-state classifier consumes pane, state and alive.
+FM_BACKEND_TERN_AGENTS_LUA='local out = {} for _, a in ipairs(cx.agents:list()) do table.insert(out, {pane = a.pane, session = a.session, tab = a.tab, host = a.host, state = a.state, alive = a.alive, busy = a.busy, program = a.program}) end return tern.json.encode(out)'
 
 # FM_BACKEND_TERN_SUBMIT_POLLS (default 6): how many native-state samples
 # fm_backend_tern_send_text_submit spreads across each Enter attempt's
@@ -538,7 +547,10 @@ fm_backend_tern_ctl() {  # <ctl-args...>
 # fm_backend_tern_agents_json: the window's agent list as a JSON array with its
 # ids quoted, or failure when any step of the two-call read fails. The answer
 # is the text after the leading arrow, ignoring a banner line before it; text
-# with no arrow is accepted only if it is itself a JSON array.
+# with no arrow is accepted only if it is itself a JSON array. The answer is
+# display text (see the header): one that is not valid JSON, such as a string
+# holding a raw newline, fails here like any other malformed answer and is never
+# repaired.
 fm_backend_tern_agents_json() {
   local ack state text line json='' found=0
   ack=$(fm_backend_tern_ctl carly lua "$FM_BACKEND_TERN_AGENTS_LUA") || return 1
