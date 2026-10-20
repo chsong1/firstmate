@@ -15,6 +15,14 @@
 # is neither counted nor consumes a response. The ids in these fixtures are
 # deliberately above 2^53 so a path that round-trips them through a JSON
 # number type (or a shell arithmetic cast) fails here.
+#
+# The `tern ctl state` fixtures (state_text and the helpers over it) model
+# Carly's answer slot, which stores the text Carly DISPLAYS for a Lua program's
+# result, "→ <answer>", not escaped JSON: the text goes in verbatim, so a case
+# can hold a raw control character inside a JSON string exactly as a live window
+# displays the free text of a whole `cx.agents:list()` entry. The fake never runs
+# the Lua program it is handed; what the window would have answered is each
+# case's fixture.
 # shellcheck disable=SC2016 # File-wide: run_tern/safety_run and the dispatcher cases pass single-quoted snippets to `bash -c`, where the CHILD shell expands $1..$4 and $0 from the arguments that follow, exactly as tests/fm-backend.test.sh's child-Bash cases do.
 set -u
 
@@ -37,6 +45,7 @@ BLK_NEIGHBOR=9223372036854775806
 TARGET="$SID:$BLK"
 SEL="$SID/$BLK"
 US=$'\x1f'
+NL=$'\n'
 
 make_tern_fakebin() {  # <dir> -> echoes fakebin dir
   local dir=$1 fb="$1/fakebin"
@@ -160,16 +169,31 @@ ctl_down() {
 # carly.last_tool.text is <text> verbatim (jq builds the JSON).
 state_text() { jq -nc --arg t "$3" '{carly:{last_tool:{text:$t}}}' > "$1/responses/$2.out"; }
 
+# agent_json <pane> <state> [alive]: one agent entry in the shape the adapter's Lua
+# projection (FM_BACKEND_TERN_AGENTS_LUA) answers: the ids as RAW integers, the state
+# word, booleans and two short names, and no free text.
 agent_json() {  # <pane> <state> [alive]
-  local pane=$1 state=$2 alive=${3:-true} busy=false at_prompt=false
+  local pane=$1 state=$2 alive=${3:-true} busy=false
   [ "$state" = working ] && busy=true
-  [ "$state" = idle ] && at_prompt=true
-  printf '{"pane":%s,"session":%s,"tab":%s,"kind":"agent","program":"omp","state":"%s","busy":%s,"at_prompt":%s,"alive":%s}' \
-    "$pane" "$SID" "$TAB" "$state" "$busy" "$at_prompt" "$alive"
+  printf '{"pane":%s,"session":%s,"tab":%s,"host":"unit-host","state":"%s","alive":%s,"busy":%s,"program":"omp"}' \
+    "$pane" "$SID" "$TAB" "$state" "$alive" "$busy"
 }
 
-# state_agents <dir> <n> <agent-json>...: the carly.last_tool.text for
-# cx.agents:list(), i.e. "→ [..]".
+# displayed_agent_json <pane> <state> <line-break>: the same agent as the window DISPLAYS it
+# when the program returns the WHOLE `cx.agents:list()` entry, free-text fields included
+# (title, last_message, running.line, last.line). <line-break> separates the two lines of
+# last_message: "$NL" is the RAW newline a live window displays inside the string, which JSON
+# forbids; the two characters \n are its escaped form, the control that shows the raw
+# character, not the free text itself, is what the adapter cannot read.
+displayed_agent_json() {  # <pane> <state> <line-break>
+  local entry
+  entry=$(agent_json "$1" "$2")
+  printf '%s,"title":"Fix the build","last_message":"Captain, the build is green.%sNext: rerun the suite.","running":{"line":"go test ./..."},"last":{"line":"ok 0.2s"}}' \
+    "${entry%?}" "$3"
+}
+
+# state_agents <dir> <n> <agent-json>...: the `tern ctl state` body whose
+# carly.last_tool.text is the displayed answer "→ [..]" for those entries.
 state_agents() {
   local dir=$1 n=$2 body='' sep=''
   shift 2
@@ -631,7 +655,7 @@ test_dispatch_composer_state_routes_tern() {
 # --- native state (busy_state / native_state) ---------------------------------------------------------
 
 test_busy_state_maps_native_agent_state() {
-  local dir out state want
+  local dir out state want lua_call
   for state in 'working:busy' 'idle:idle' 'waiting_input:blocked'; do
     want=${state#*:}; state=${state%%:*}
     dir=$(new_case "busy-$state")
@@ -647,8 +671,12 @@ test_busy_state_maps_native_agent_state() {
   ctl_ok "$dir" 2
   state_agents "$dir" 3 "$(agent_json "$BLK" idle)"
   run_tern "$dir" 'fm_backend_tern_busy_state "$1"' "$TARGET" >/dev/null
-  assert_contains "$(cat "$dir/log")" "tern${US}ctl${US}carly${US}lua${US}return tern.json.encode(cx.agents:list())" \
-    "busy_state should ask Carly for cx.agents:list() through tern ctl"
+  # One `tern ctl carly lua <program>` per read, with the program as ONE non-empty
+  # argument (it holds spaces, so a split would hand tern a truncated program).
+  assert_equals "1" "$(count_calls "$dir" "${US}carly${US}lua${US}")" "busy_state should hand Carly its Lua program exactly once per read"
+  lua_call=$(grep -aF -- "${US}carly${US}lua${US}" "$dir/log")
+  assert_equals "5" "$(printf '%s\n' "$lua_call" | awk -F "$US" '{ print NF }')" "the Lua program must reach tern ctl carly lua as ONE argument"
+  [ -n "${lua_call##*"$US"}" ] || fail "the Lua program handed to tern ctl carly lua must not be empty"
   assert_contains "$(cat "$dir/log")" "tern${US}ctl${US}state" "busy_state should read the stored answer with tern ctl state"
   assert_call_order "$dir/log" "${US}lua${US}" "${US}ctl${US}state" "the Lua call must run before the state read"
   pass "fm_backend_tern_busy_state: working->busy, idle->idle, waiting_input->blocked (herdr's vocabulary), picking the entry whose pane equals the block id at 64 bits"
@@ -756,7 +784,82 @@ test_native_state_reports_each_vocabulary_word() {
   out=$( run_tern "$dir" 'fm_backend_tern_native_state "$1"' "$TARGET" )
   [ "$out" = unknown ] || fail "native_state for a block missing from the inventory should read unknown, got '$out'"
   assert_not_contains "$(cat "$dir/log")" "${US}ctl${US}" "native_state must not ask the window about a block it could not verify"
-  pass "fm_backend_tern_native_state: working|idle|waiting_input from cx.agents:list() after one inventory check, unknown for an unverified block"
+  pass "fm_backend_tern_native_state: working|idle|waiting_input from the projected agent list after one inventory check, unknown for an unverified block"
+}
+
+# The answer slot stores DISPLAY text, so a whole `cx.agents:list()` entry reaches it with
+# its free text's raw newlines inside JSON strings, which no JSON parser accepts: on a live
+# window that made every native read unknown. The adapter therefore asks for a projection
+# with no free text (FM_BACKEND_TERN_AGENTS_LUA). Because the fake never runs that program,
+# these two cases pin the adapter's side of the contract: what an unparseable displayed
+# answer does to its callers, and what the projected answer of the same agents yields.
+
+test_native_state_reads_unknown_for_a_displayed_answer_with_a_raw_control_character() {
+  local dir out status
+  dir=$(new_case displayed-free-text-agents-json)
+  ctl_ok "$dir" 1
+  state_agents "$dir" 2 "$(displayed_agent_json "$BLK" working "$NL")"
+  out=$( run_tern "$dir" 'fm_backend_tern_agents_json' )
+  status=$?
+  [ "$status" -ne 0 ] || fail "an answer with a raw newline inside a string is not JSON and must fail agents_json, got: $out"
+  [ -z "$out" ] || fail "a failed agents_json must print nothing, got: $out"
+
+  dir=$(new_case displayed-free-text-native-state)
+  ls_with_block "$dir" 1
+  ctl_ok "$dir" 2
+  state_agents "$dir" 3 "$(displayed_agent_json "$BLK_NEIGHBOR" idle "$NL")" "$(displayed_agent_json "$BLK" working "$NL")"
+  out=$( run_tern "$dir" 'fm_backend_tern_native_state "$1"' "$TARGET" 2>&1 )
+  status=$?
+  [ "$status" -eq 0 ] || fail "an unparseable displayed answer must never fail native_state"
+  [ "$out" = unknown ] || fail "native_state should read unknown, and print nothing else, for an answer holding a raw newline inside a string, got '$out'"
+
+  dir=$(new_case displayed-free-text-busy-state)
+  ls_with_block "$dir" 1
+  ctl_ok "$dir" 2
+  state_agents "$dir" 3 "$(displayed_agent_json "$BLK_NEIGHBOR" idle "$NL")" "$(displayed_agent_json "$BLK" working "$NL")"
+  out=$( run_tern "$dir" 'fm_backend_tern_busy_state "$1"' "$TARGET" 2>&1 )
+  status=$?
+  [ "$status" -eq 0 ] || fail "an unparseable displayed answer must never fail busy_state"
+  [ "$out" = unknown ] || fail "busy_state should read unknown, and print nothing else, for an answer holding a raw newline inside a string, got '$out'"
+
+  # The same entries with the newline ESCAPED are valid JSON and read normally, so the raw
+  # control character (not the free-text fields themselves) is what the adapter cannot read
+  # and the cases above cannot pass for any other reason.
+  dir=$(new_case displayed-escaped-free-text-native-state)
+  ls_with_block "$dir" 1
+  ctl_ok "$dir" 2
+  state_agents "$dir" 3 "$(displayed_agent_json "$BLK_NEIGHBOR" idle '\n')" "$(displayed_agent_json "$BLK" working '\n')"
+  out=$( run_tern "$dir" 'fm_backend_tern_native_state "$1"' "$TARGET" )
+  [ "$out" = working ] || fail "the same entries with the newline escaped are valid JSON and should read 'working', got '$out'"
+  pass "fm_backend_tern_native_state/busy_state: a displayed answer with a raw newline inside a string fails agents_json and reads unknown without failing the caller, while the same entries with it escaped read normally"
+}
+
+test_native_state_parses_the_projected_answer_and_keeps_64_bit_ids() {
+  local dir out rows
+  dir=$(new_case projected-agents-json)
+  ctl_ok "$dir" 1
+  state_agents "$dir" 2 "$(agent_json "$BLK_NEIGHBOR" idle)" "$(agent_json "$BLK" working)"
+  out=$( run_tern "$dir" 'fm_backend_tern_agents_json' ) || fail "the projected answer of ids, states and booleans must read as an agent array"
+  rows=$(printf '%s' "$out" | jq -r '.[] | [.state, .pane, .session, .tab] | join(" ")') \
+    || fail "agents_json must print a JSON agent array, got: $out"
+  assert_equals "idle $BLK_NEIGHBOR $SID $TAB"$'\n'"working $BLK $SID $TAB" "$rows" \
+    "every id of the projected entries must come back as its exact decimal string (a JSON double would round them)"
+
+  dir=$(new_case projected-native-state)
+  ls_with_block "$dir" 1
+  ctl_ok "$dir" 2
+  state_agents "$dir" 3 "$(agent_json "$BLK_NEIGHBOR" idle)" "$(agent_json "$BLK" working)"
+  out=$( run_tern "$dir" 'fm_backend_tern_native_state "$1"' "$TARGET" )
+  [ "$out" = working ] || fail "the projected answer should read the block's own 'working' state, not its 64-bit neighbor's 'idle', got '$out'"
+
+  # Newlines BETWEEN JSON tokens are valid; only one inside a string is unreadable.
+  dir=$(new_case projected-multiline-native-state)
+  ls_with_block "$dir" 1
+  ctl_ok "$dir" 2
+  state_text "$dir" 3 "→ [${NL}  $(agent_json "$BLK_NEIGHBOR" idle),${NL}  $(agent_json "$BLK" working)${NL}]"
+  out=$( run_tern "$dir" 'fm_backend_tern_native_state "$1"' "$TARGET" )
+  [ "$out" = working ] || fail "an answer laid out over several lines (newlines between tokens, none inside a string) is valid JSON and should read 'working', got '$out'"
+  pass "fm_backend_tern_native_state: the projected answer parses (also laid out over several lines), every id survives as an exact decimal string, and the entry whose pane equals the block id supplies the state"
 }
 
 test_dispatch_busy_state_routes_tern() {
@@ -1597,6 +1700,8 @@ test_busy_state_strips_fresh_lua_state_banner
 test_busy_state_degrades_to_unknown_when_ctl_is_down
 test_native_state_bounds_a_hung_ctl_endpoint
 test_native_state_reports_each_vocabulary_word
+test_native_state_reads_unknown_for_a_displayed_answer_with_a_raw_control_character
+test_native_state_parses_the_projected_answer_and_keeps_64_bit_ids
 test_dispatch_busy_state_routes_tern
 test_agent_state_classifies_the_foreground_process
 test_agent_state_missing_dead_and_unreadable
