@@ -36,11 +36,6 @@ fm_git_identity fmtest fmtest@example.invalid
 # shellcheck source=/dev/null
 . "$ROOT/bin/fm-backend.sh"
 
-# The detect cases below pin the markers they care about explicitly; this
-# suite may itself run inside a Tern block, so the ambient Tern markers are
-# cleared once, as the ambient tmux/herdr/cmux markers are per case.
-unset TERM_PROGRAM TERN_PANE TERN_PANE_SOCKET TERN_WINDOW_KEY
-
 TMP_ROOT=$(fm_test_tmproot fm-backend-tests)
 # A claude spawn writes workspace trust into the launching user's own store,
 # and the script resolves it as ${CLAUDE_CONFIG_DIR:-${HOME:-}}, so the value
@@ -260,49 +255,6 @@ test_backend_detect_precedence() {
   [ "$out" = tmux ] || fail "fm_backend_detect should resolve nesting innermost-first with all three markers (tmux wins), got '$out'"
 
   pass "fm_backend_detect: no markers -> undetected, HERDR_ENV=1 -> herdr, \$TMUX -> tmux, CMUX_WORKSPACE_ID -> cmux, nested combinations resolve innermost-first"
-}
-
-# fm_backend_detect: Tern is selected only by TERM_PROGRAM=tern together with a
-# non-empty TERN_PANE, after tmux and herdr (a multiplexer nested inside a Tern
-# block owns the session plane) and before cmux. Each case also unsets the
-# cmux markers and pins a non-Darwin uname so the ambient shell cannot leak in.
-test_backend_detect_tern_precedence() {
-  local out
-
-  out=$(unset TMUX HERDR_ENV CMUX_WORKSPACE_ID __CFBundleIdentifier; PATH="$FAKE_NONDARWIN_BIN:$PATH" TERM_PROGRAM=tern TERN_PANE=9223372036854775807 fm_backend_detect) \
-    || fail "fm_backend_detect should succeed for TERM_PROGRAM=tern with TERN_PANE set"
-  [ "$out" = tern ] || fail "fm_backend_detect should report tern for the Tern block markers alone, got '$out'"
-
-  if out=$(unset TMUX HERDR_ENV CMUX_WORKSPACE_ID __CFBundleIdentifier TERN_PANE; PATH="$FAKE_NONDARWIN_BIN:$PATH" TERM_PROGRAM=tern fm_backend_detect); then
-    fail "TERM_PROGRAM=tern without TERN_PANE must not detect tern, got '$out'"
-  fi
-  if out=$(unset TMUX HERDR_ENV CMUX_WORKSPACE_ID __CFBundleIdentifier TERM_PROGRAM; PATH="$FAKE_NONDARWIN_BIN:$PATH" TERN_PANE=7 fm_backend_detect); then
-    fail "TERN_PANE without TERM_PROGRAM=tern must not detect tern, got '$out'"
-  fi
-  if out=$(unset TMUX HERDR_ENV CMUX_WORKSPACE_ID __CFBundleIdentifier; PATH="$FAKE_NONDARWIN_BIN:$PATH" TERM_PROGRAM=xterm TERN_PANE=7 fm_backend_detect); then
-    fail "a foreign TERM_PROGRAM with TERN_PANE must not detect tern, got '$out'"
-  fi
-  if out=$(unset TMUX HERDR_ENV CMUX_WORKSPACE_ID __CFBundleIdentifier; PATH="$FAKE_NONDARWIN_BIN:$PATH" TERM_PROGRAM=tern TERN_PANE='' fm_backend_detect); then
-    fail "an empty TERN_PANE must not detect tern, got '$out'"
-  fi
-
-  out=$(unset TMUX CMUX_WORKSPACE_ID __CFBundleIdentifier; PATH="$FAKE_NONDARWIN_BIN:$PATH" HERDR_ENV=1 TERM_PROGRAM=tern TERN_PANE=7 fm_backend_detect) \
-    || fail "fm_backend_detect should succeed with herdr and tern markers present"
-  [ "$out" = herdr ] || fail "herdr inside a Tern block must win over tern, got '$out'"
-
-  out=$(unset HERDR_ENV CMUX_WORKSPACE_ID __CFBundleIdentifier; PATH="$FAKE_NONDARWIN_BIN:$PATH" TMUX='fake,1,0' TERM_PROGRAM=tern TERN_PANE=7 fm_backend_detect) \
-    || fail "fm_backend_detect should succeed with tmux and tern markers present"
-  [ "$out" = tmux ] || fail "tmux inside a Tern block must win over tern, got '$out'"
-
-  out=$(unset TMUX HERDR_ENV __CFBundleIdentifier; PATH="$FAKE_NONDARWIN_BIN:$PATH" CMUX_WORKSPACE_ID=fake-uuid TERM_PROGRAM=tern TERN_PANE=7 fm_backend_detect) \
-    || fail "fm_backend_detect should succeed with cmux and tern markers present"
-  [ "$out" = tern ] || fail "tern must win over the cmux marker (a cmux marker inherited into a Tern block), got '$out'"
-
-  out=$(unset TMUX HERDR_ENV __CFBundleIdentifier; PATH="$FAKE_NONDARWIN_BIN:$PATH" CMUX_WORKSPACE_ID=fake-uuid TERM_PROGRAM=ghostty fm_backend_detect) \
-    || fail "fm_backend_detect should still detect cmux without Tern markers"
-  [ "$out" = cmux ] || fail "cmux detection must be unchanged when Tern markers are absent, got '$out'"
-
-  pass "fm_backend_detect: tern needs TERM_PROGRAM=tern plus TERN_PANE and ranks tmux > herdr > tern > cmux"
 }
 
 # fm_backend_detect's cmux FALLBACK signals (docs/cmux-backend.md "Runtime
@@ -584,40 +536,45 @@ test_backend_rex_autodetect() {
   pass "fm_backend_detect/fm_backend_name: TERM_PROGRAM=rex + REX_BLOCK -> rex (silent); nested tmux/herdr win; REX_BLOCK alone never selects rex; explicit config wins"
 }
 
-# Tern auto-detection is loud like cmux (experimental) and never outranks tmux or
-# herdr: a Herdr client or tmux server inside a Tern block carries both markers,
-# and the multiplexer owns the session plane there.
-test_backend_name_tern_autodetect_notice() {
-  local dir cfg out errfile
+# Tern is explicit-only (docs/tern-backend.md "Selection is explicit"): the
+# TERM_PROGRAM=tern and TERN_PANE markers reach every descendant process of a
+# Tern block, including a tmux server or Herdr client started inside it, so they
+# must never select it. Only FM_BACKEND, config/backend, or --backend reach tern.
+test_backend_tern_is_never_autodetected() {
+  local dir cfg cfg_tern out errfile
 
-  dir="$TMP_ROOT/name-autodetect-tern"; cfg="$dir/config-empty"; mkdir -p "$cfg"
+  dir="$TMP_ROOT/tern-explicit-only"; cfg="$dir/config-empty"; cfg_tern="$dir/config-tern"
+  mkdir -p "$cfg" "$cfg_tern"; printf 'tern\n' > "$cfg_tern/backend"
   errfile="$dir/err.txt"
 
-  : > "$errfile"
-  out=$(unset TMUX HERDR_ENV CMUX_WORKSPACE_ID __CFBundleIdentifier; PATH="$FAKE_NONDARWIN_BIN:$PATH" TERM_PROGRAM=tern TERN_PANE=9223372036854775807 FM_BACKEND='' FM_BACKEND_CONFIG_DIR="$cfg" fm_backend_name 2>"$errfile")
-  [ "$out" = tern ] || fail "fm_backend_name should auto-detect tern from TERM_PROGRAM=tern plus TERN_PANE, got '$out'"
-  assert_contains "$(cat "$errfile")" "EXPERIMENTAL tern backend" \
-    "fm_backend_name did not print a loud notice when auto-detecting tern"
-  assert_contains "$(cat "$errfile")" "config/backend" \
-    "fm_backend_name's tern auto-detect notice did not name the config opt-out"
-  assert_contains "$(cat "$errfile")" "--backend tmux" \
-    "fm_backend_name's tern auto-detect notice did not name the --backend tmux opt-out"
+  if out=$(unset TMUX HERDR_ENV CMUX_WORKSPACE_ID __CFBundleIdentifier; PATH="$FAKE_NONDARWIN_BIN:$PATH" TERM_PROGRAM=tern TERN_PANE=9223372036854775807 fm_backend_detect); then
+    fail "fm_backend_detect must not report a backend from the Tern block markers, got '$out'"
+  fi
+  if out=$(unset TMUX HERDR_ENV CMUX_WORKSPACE_ID __CFBundleIdentifier; PATH="$FAKE_NONDARWIN_BIN:$PATH" TERM_PROGRAM=tern TERN_PANE=7 TERN_PANE_SOCKET=/run/tern/pane.sock TERN_WINDOW_KEY=win-key TERN_WINDOW_SOCKET=/run/tern/window.sock TERN_IDENTITY=ident fm_backend_detect); then
+    fail "fm_backend_detect must not report a backend from any combination of Tern markers, got '$out'"
+  fi
 
   : > "$errfile"
-  out=$(unset TMUX CMUX_WORKSPACE_ID __CFBundleIdentifier; PATH="$FAKE_NONDARWIN_BIN:$PATH" HERDR_ENV=1 TERM_PROGRAM=tern TERN_PANE=7 FM_BACKEND='' FM_BACKEND_CONFIG_DIR="$cfg" fm_backend_name 2>"$errfile")
-  [ "$out" = herdr ] || fail "herdr inside a Tern block should auto-detect herdr, got '$out'"
-  [ ! -s "$errfile" ] || fail "herdr-inside-tern auto-detect (result herdr) must stay silent"$'\n'"$(cat "$errfile")"
+  out=$(unset TMUX HERDR_ENV CMUX_WORKSPACE_ID __CFBundleIdentifier; PATH="$FAKE_NONDARWIN_BIN:$PATH" TERM_PROGRAM=tern TERN_PANE=7 FM_BACKEND='' FM_BACKEND_CONFIG_DIR="$cfg" fm_backend_name 2>"$errfile")
+  [ "$out" = tmux ] || fail "fm_backend_name inside a Tern block with nothing configured must default to tmux, got '$out'"
+  [ -s "$errfile" ] && fail "the tmux default inside a Tern block must stay silent"$'\n'"$(cat "$errfile")"
 
-  : > "$errfile"
-  out=$(unset HERDR_ENV CMUX_WORKSPACE_ID __CFBundleIdentifier; PATH="$FAKE_NONDARWIN_BIN:$PATH" TMUX='fake,1,0' TERM_PROGRAM=tern TERN_PANE=7 FM_BACKEND='' FM_BACKEND_CONFIG_DIR="$cfg" fm_backend_name 2>"$errfile")
-  [ "$out" = tmux ] || fail "tmux inside a Tern block should auto-detect tmux, got '$out'"
-  [ ! -s "$errfile" ] || fail "tmux-inside-tern auto-detect (result tmux) must stay silent"$'\n'"$(cat "$errfile")"
+  # A multiplexer started inside a Tern block still detects itself.
+  out=$(unset HERDR_ENV CMUX_WORKSPACE_ID __CFBundleIdentifier; PATH="$FAKE_NONDARWIN_BIN:$PATH" TMUX='fake,1,0' TERM_PROGRAM=tern TERN_PANE=7 fm_backend_detect)
+  [ "$out" = tmux ] || fail "tmux started inside a Tern block still detects tmux, got '$out'"
+  out=$(unset TMUX CMUX_WORKSPACE_ID __CFBundleIdentifier; PATH="$FAKE_NONDARWIN_BIN:$PATH" HERDR_ENV=1 TERM_PROGRAM=tern TERN_PANE=7 fm_backend_detect)
+  [ "$out" = herdr ] || fail "herdr started inside a Tern block still detects herdr, got '$out'"
 
-  # An explicit choice always beats the ambient Tern markers.
+  out=$(unset TMUX HERDR_ENV CMUX_WORKSPACE_ID __CFBundleIdentifier; FM_BACKEND=tern FM_BACKEND_CONFIG_DIR="$cfg" fm_backend_name)
+  [ "$out" = tern ] || fail "FM_BACKEND=tern must select tern, got '$out'"
+  out=$(unset TMUX HERDR_ENV CMUX_WORKSPACE_ID __CFBundleIdentifier; FM_BACKEND='' FM_BACKEND_CONFIG_DIR="$cfg_tern" fm_backend_name)
+  [ "$out" = tern ] || fail "config/backend=tern must select tern, got '$out'"
+
+  # An explicit choice of another backend beats the ambient Tern markers.
   out=$(unset TMUX HERDR_ENV CMUX_WORKSPACE_ID __CFBundleIdentifier; PATH="$FAKE_NONDARWIN_BIN:$PATH" TERM_PROGRAM=tern TERN_PANE=7 FM_BACKEND=tmux FM_BACKEND_CONFIG_DIR="$cfg" fm_backend_name)
   [ "$out" = tmux ] || fail "FM_BACKEND=tmux should win over ambient Tern markers, got '$out'"
 
-  pass "fm_backend_name: auto-detected tern is loud and experimental, tmux/herdr inside Tern stay silent, explicit FM_BACKEND still wins"
+  pass "fm_backend_detect/fm_backend_name: tern is never auto-detected from TERM_PROGRAM/TERN_PANE (tmux default stays silent, a nested tmux or herdr still detects itself); only FM_BACKEND or config/backend select it"
 }
 
 test_backend_dispatch_tables_include_tern() {
@@ -1415,7 +1372,6 @@ backend_base_ref >/dev/null
 
 test_backend_name_precedence
 test_backend_detect_precedence
-test_backend_detect_tern_precedence
 test_backend_detect_cmux_fallback_bundle_id
 test_backend_detect_cmux_fallback_requires_darwin
 test_backend_detect_cmux_fallback_tmux_nested_false_positive
@@ -1426,7 +1382,7 @@ test_backend_name_cmux_fallback_notice
 test_backend_name_autodetect_notice
 test_backend_paseo_is_never_autodetected
 test_backend_rex_autodetect
-test_backend_name_tern_autodetect_notice
+test_backend_tern_is_never_autodetected
 test_backend_dispatch_tables_include_tern
 test_backend_name_explicit_beats_detection
 test_backend_validate_refuses_unknown

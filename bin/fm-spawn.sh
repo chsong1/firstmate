@@ -110,8 +110,7 @@
 #   exact task only (docs/configuration.md "Runtime backend" owns when that flag
 #   is authorized). Without it, the script resolves FM_BACKEND, then
 #   config/backend, then runtime auto-detection from the runtime firstmate's
-#   environment: $TMUX, HERDR_ENV=1, TERM_PROGRAM=rex with REX_BLOCK,
-#   TERM_PROGRAM=tern with TERN_PANE, or cmux
+#   environment: $TMUX, HERDR_ENV=1, TERM_PROGRAM=rex with REX_BLOCK, or cmux
 #   runtime signals (via bin/fm-backend.sh's fm_backend_detect, with cmux
 #   fallback details in docs/cmux-backend.md),
 #   then tmux.
@@ -120,9 +119,9 @@
 #   Orca owns both the task worktree and terminal, so ship/scout Orca spawns do
 #   not run treehouse get; cmux, paseo, rex, and tern are session providers only,
 #   exactly like herdr/zellij, so they do. Auto-detected herdr and rex stay silent
-#   like tmux; auto-detected cmux or tern prints a loud stderr notice; zellij,
-#   orca, and paseo are never auto-detected (paseo's markers leak into every
-#   descendant process).
+#   like tmux; auto-detected cmux prints a loud stderr notice; zellij, orca,
+#   paseo, and tern are never auto-detected (the paseo and tern markers leak
+#   into every descendant process).
 #   codex-app is not a known backend yet; docs/codex-app-backend.md owns that
 #   blocked backend contract. Default tmux spawns do not write backend= to meta;
 #   absent backend= means tmux. cmux, paseo, and tern do not support --secondmate

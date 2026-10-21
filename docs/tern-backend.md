@@ -18,9 +18,7 @@ Prerequisites:
 - A Tern window control endpoint only when native agent-state reads through `tern ctl` are required; without it, native state degrades rather than failing the backend.
 
 Select tern with local `config/backend` containing `tern`, `FM_BACKEND=tern` for one launch, or an explicit request to Firstmate.
-It can also be runtime auto-detected when Firstmate itself runs inside Tern (`TERM_PROGRAM=tern` with a non-empty `TERN_PANE`) and neither tmux nor Herdr already won.
-Detection prefers `$TMUX`, then `HERDR_ENV=1`, then Tern, then cmux, because a multiplexer nested inside a Tern block must keep owning the session plane.
-Auto-detected tern prints a stderr notice naming the experimental tern backend plus the `config/backend` and `--backend tmux` opt-outs.
+It is never runtime auto-detected; see "Selection is explicit" below.
 
 A spawn stops with an actionable setup message when `tern` or `jq` is unavailable, and container creation version-gates at 0.9.4.
 Routine supervision uses `bin/fm-peek.sh <id>` and `FM_HOME=<home> bin/fm-send.sh <id> '<text>'` without focusing the task block.
@@ -36,15 +34,15 @@ Verify setup by spawning a small task and confirming metadata contains `backend=
 | `FM_BACKEND_TERN_SUBMIT_POLLS` | Native-state samples per Enter confirmation budget (default `6`). |
 | `FM_BACKEND_TERN_SUBMIT_MIN_SLEEP` | Minimum per-Enter confirmation budget before polling native state after an idle baseline (default `0.6`). |
 
-## Runtime detection
+## Selection is explicit
 
-`TERM_PROGRAM=tern` together with a non-empty `TERN_PANE` is the primary Tern runtime marker.
-`TERN_PANE_SOCKET` and `TERN_WINDOW_KEY` may also be present inside a block; neither alone selects the backend.
-Detection checks tmux first, then Herdr, then Tern, then cmux, so a multiplexer nested inside Tern remains the active backend.
+tern is explicit-only, like zellij, orca, and Paseo: `config/backend`, `FM_BACKEND=tern`, or `--backend tern` select it, and nothing else does.
+Tern stamps `TERM_PROGRAM=tern` and `TERN_PANE=<block-id>` (plus `TERN_PANE_SOCKET` and `TERN_WINDOW_KEY`) into every block its session daemon spawns.
+A tmux server or Herdr client started inside a block inherits all of them, so their presence proves only that some ancestor was Tern, never that the captain chose it.
+Reading them as a selection would make tern an ambient default, which "Authority is explicit and never inferred" rules out; `fm_backend_detect` therefore ignores them.
 
-Auto-detection selects only the backend.
-It never grants a missing control endpoint or invents native agent state.
-When `tern ctl` has no window on this machine, native busy paths degrade to `unknown` and the shared screen classifier; they do not hard-error the adapter.
+The markers are still useful once tern has been selected explicitly.
+A cleared-environment launch keeps the `TERN_*` identity and, on a `backend=tern` task only, `TERM_PROGRAM` (see [`configuration.md`](configuration.md#variables-retained-and-where-values-come-from)), and `tests/tern-test-safety.sh` refuses to close a session that hosts the caller's own `$TERN_PANE` block.
 
 ## Task shape and metadata
 
@@ -168,7 +166,7 @@ The only sanctioned teardown is `tern_safe_kill_session <session_id> <want_name>
 - Secondmate spawns are unsupported (`fm-spawn.sh` refuses `--secondmate` on `backend=tern`).
 - The away-mode `/afk` supervisor backend does not support tern; only `tmux` and `herdr` supervisor panes are accepted.
 - Native agent state requires a Tern window control endpoint; remote-host or headless daemon access that can `ls`/`capture` may still lack `ctl`.
-- Multiplexers swallow TSP: a Tern block hosting tmux or Herdr never shows native Tern agent state, which is why detection prefers those multiplexers.
+- Multiplexers swallow TSP: a Tern block hosting tmux or Herdr never shows native Tern agent state.
 - There is no verified native push-event wait (`tern events` is not treated as an agent-transition stream; `has_push` stays herdr-only).
 - On Tern 0.9.4 remote-host blocks observed here, plain and `--ansi` capture of an omp TSP surface are empty, and `--surfaces` returns transcript text without omp's composer, so composer-only submit proof is `unknown` for omp and native state is the submit path when `ctl` works.
 - Creating a session or tab does not attempt focus restore; focus behaviour is not live-verified here.
