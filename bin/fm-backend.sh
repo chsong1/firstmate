@@ -38,12 +38,12 @@
 # REX_BLOCK); see docs/rex-backend.md.
 # The experimental T3 Code adapter owns agent sessions over T3's /mcp while
 # Treehouse owns task worktrees. It is selected explicitly only.
-# P8 adds bin/backends/tern.sh (Stencil Tern), also EXPERIMENTAL and
-# spawn-capable and session-provider-only, behind `--backend tern`/
-# `FM_BACKEND=tern`/`config/backend`, and behind runtime auto-detection when
-# firstmate itself runs inside a Tern block (TERM_PROGRAM=tern with TERN_PANE
-# set) with no explicit backend setting; see docs/tern-backend.md for its
-# mechanics.
+# P8 adds bin/backends/tern.sh (Stencil Tern), also EXPERIMENTAL, spawn-capable,
+# and session-provider-only, EXPLICIT-ONLY like zellij, orca, and paseo:
+# `--backend tern`, `FM_BACKEND=tern`, or config/backend, never runtime
+# auto-detection. Tern stamps TERM_PROGRAM=tern and TERN_PANE into every block
+# it spawns (a tmux server or Herdr client started inside a block inherits
+# them), so an inherited marker is not a selection; see docs/tern-backend.md.
 # Codex App is intentionally not in the known set yet.
 # docs/codex-app-backend.md owns that blocked backend contract.
 #
@@ -151,18 +151,6 @@ fm_backend_is_known() {  # <name>
 # that nested case through their own markers, and before cmux, whose markers
 # a Rex server started from a cmux tab could have inherited.
 #
-# tern injects TERM_PROGRAM=tern and TERN_PANE=<block-id> (plus TERN_PANE_SOCKET
-# and TERN_WINDOW_KEY) into every block its session daemon spawns. Neither
-# variable is a marker alone - TERM_PROGRAM names many terminals and TERN_PANE
-# is an ordinary variable a shell could export - so BOTH are required. tern is
-# checked after tmux and herdr because either can run nested inside a Tern block
-# and a multiplexer swallows the Tern Surface Protocol, so a block hosting one
-# never shows native agent state: the multiplexer is then the innermost,
-# currently-executing layer and must win. It is checked before cmux because the
-# pair is set by Tern itself for every block, the more specific signal, while
-# cmux's variables and macOS bundle id are inherited by anything launched from a
-# cmux terminal.
-#
 # cmux FALLBACK signals (docs/cmux-backend.md "Runtime auto-detection" owns
 # the empirical record): cmux's bundled `claude` PATH shim routes through
 # cmux-claude-wrapper, whose passthrough path unsets every CMUX_* variable
@@ -182,8 +170,7 @@ fm_backend_is_known() {  # <name>
 #      tmux, where the tmux server reparents to launchd and the chain never
 #      reaches cmux - which is fine, because $TMUX already won there.
 # Callers needing the winning signal read FM_BACKEND_DETECT_SIGNAL (set to
-# TMUX, HERDR_ENV, TERM_PROGRAM, TERN_PANE, CMUX_WORKSPACE_ID, bundle-id, or
-# ancestry) and
+# TMUX, HERDR_ENV, TERM_PROGRAM, CMUX_WORKSPACE_ID, bundle-id, or ancestry) and
 # FM_BACKEND_DETECTED after a direct (non-command-substitution) call.
 FM_BACKEND_CMUX_BUNDLE_ID="com.cmuxterm.app"
 
@@ -208,12 +195,6 @@ fm_backend_detect() {
     printf 'rex'
     return 0
   fi
-  if [ "${TERM_PROGRAM:-}" = tern ] && [ -n "${TERN_PANE:-}" ]; then
-    FM_BACKEND_DETECTED=tern
-    FM_BACKEND_DETECT_SIGNAL=TERN_PANE
-    printf 'tern'
-    return 0
-  fi
   if [ -n "${CMUX_WORKSPACE_ID:-}" ]; then
     FM_BACKEND_DETECTED=cmux
     FM_BACKEND_DETECT_SIGNAL=CMUX_WORKSPACE_ID
@@ -229,6 +210,10 @@ fm_backend_detect() {
   # sh.paseo.desktop bundle id reach every descendant process, including a
   # tmux server started from a Paseo tab, so their presence never proves the
   # captain chose Paseo (docs/paseo-backend.md "Selection is explicit").
+  # Tern is likewise NOT detected here. TERM_PROGRAM=tern and TERN_PANE reach
+  # every descendant process of a Tern block, including a tmux server or Herdr
+  # client started inside it, so their presence never proves the captain chose
+  # Tern (docs/tern-backend.md "Selection is explicit").
   return 1
 }
 
@@ -320,13 +305,13 @@ fm_backend_explicit_name() {
 # per-task `--backend` flag is parsed by the caller (fm-spawn.sh) and takes
 # precedence over this resolution entirely; it is not read here. Auto-detect
 # fires only when nothing was explicitly configured, so an explicit setting
-# always wins. Auto-detected herdr and rex stay silent like tmux. Selecting cmux
-# or tern via auto-detect prints one loud stderr notice because both remain
-# experimental; the notice names the winning signal, so a fallback-detected cmux
-# (bundle id or ancestry, after the claude wrapper stripped CMUX_WORKSPACE_ID)
-# is visibly distinct from the primary-marker case.
-# Paseo is never auto-detected, so it only ever comes out of this function
-# from FM_BACKEND or config/backend.
+# always wins. Auto-detected herdr and rex stay silent like tmux. Auto-detected
+# cmux prints a loud stderr notice because it remains experimental. The cmux
+# notice names the winning signal, so a fallback-detected cmux (bundle id or
+# ancestry, after the claude wrapper stripped CMUX_WORKSPACE_ID) is visibly
+# distinct from the primary-marker case.
+# Paseo and tern are never auto-detected, so they only ever come out of this
+# function from FM_BACKEND or config/backend.
 fm_backend_name() {
   local detected marker
   fm_backend_explicit_name && return 0
@@ -341,9 +326,6 @@ fm_backend_name() {
         *) marker="CMUX_WORKSPACE_ID" ;;
       esac
       echo "NOTICE: auto-detected cmux runtime ($marker) - spawning into the EXPERIMENTAL cmux backend. Set config/backend or pass --backend tmux to opt out." >&2
-    fi
-    if [ "$detected" = tern ]; then
-      echo "NOTICE: auto-detected tern runtime (TERM_PROGRAM=tern with TERN_PANE set) - spawning into the EXPERIMENTAL tern backend. Set config/backend or pass --backend tmux to opt out." >&2
     fi
     printf '%s' "$detected"
     return 0

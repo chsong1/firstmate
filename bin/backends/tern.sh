@@ -10,6 +10,11 @@
 # bin/fm-backend.sh's fm_backend_source in normal operation; the unit tests
 # source it directly.
 #
+# Selection is explicit-only: `--backend tern`, FM_BACKEND=tern, or
+# config/backend. The TERM_PROGRAM=tern and TERN_PANE markers Tern injects reach
+# every descendant process of a block, so bin/fm-backend.sh's fm_backend_detect
+# never reads them (docs/tern-backend.md "Selection is explicit").
+#
 # Container shape: ONE Tern session per firstmate home, named
 # fm-<hometag> (bin/fm-backend-hometag-lib.sh; FM_TERN_SESSION overrides the
 # NAME for test isolation, mirroring FM_ZELLIJ_SESSION/HERDR_SESSION), and ONE
@@ -74,7 +79,7 @@
 # degrades to `unknown` and the shared screen classifier, and never errors. A
 # first failing call skips the second.
 # Multiplexers swallow the protocol: a tmux or herdr hosted inside a Tern block
-# never shows native state, which is why fm_backend_detect prefers them.
+# never shows native state.
 #
 # Carly's answer slot is display text: free-text fields can contain raw newlines
 # and control characters that make the displayed JSON invalid. Request only the
