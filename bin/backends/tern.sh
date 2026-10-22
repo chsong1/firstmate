@@ -154,9 +154,9 @@ FM_BACKEND_TERN_MIN_MAJOR=0
 FM_BACKEND_TERN_MIN_MINOR=9
 FM_BACKEND_TERN_MIN_PATCH=4
 
-# Request only safe agent fields; the header owns the display-text constraint.
-# The native-state classifier consumes pane, state and alive.
-FM_BACKEND_TERN_AGENTS_LUA='local out = {} for _, a in ipairs(cx.agents:list()) do table.insert(out, {pane = a.pane, session = a.session, tab = a.tab, host = a.host, state = a.state, alive = a.alive, busy = a.busy, program = a.program}) end return tern.json.encode(out)'
+# Request only the fields the native-state classifier consumes (pane, state,
+# alive); the header owns the display-text constraint.
+FM_BACKEND_TERN_AGENTS_LUA='local out = {} for _, a in ipairs(cx.agents:list()) do table.insert(out, {pane = a.pane, state = a.state, alive = a.alive}) end return tern.json.encode(out)'
 
 # FM_BACKEND_TERN_SUBMIT_POLLS (default 6): how many native-state samples
 # fm_backend_tern_send_text_submit spreads across each Enter attempt's

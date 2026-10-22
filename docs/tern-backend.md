@@ -103,14 +103,14 @@ Native agent state (desktop window control endpoint only) is read through bounde
 1. `tern ctl carly lua "$FM_BACKEND_TERN_AGENTS_LUA"`, which stores the answer of this projection of the window's agent list:
 
    ```lua
-   local out = {} for _, a in ipairs(cx.agents:list()) do table.insert(out, {pane = a.pane, session = a.session, tab = a.tab, host = a.host, state = a.state, alive = a.alive, busy = a.busy, program = a.program}) end return tern.json.encode(out)
+   local out = {} for _, a in ipairs(cx.agents:list()) do table.insert(out, {pane = a.pane, state = a.state, alive = a.alive}) end return tern.json.encode(out)
    ```
 
 2. `tern ctl state` → `.carly.last_tool.text`, stripping a leading `→` and any fresh-Lua-state banner
 
 Carly's answer slot holds the text Carly displays for the program's result, not a JSON document the adapter controls.
 In that displayed text the free text of an agent entry (`last_message`, `title`, `running.line`, `last.line`) carries raw newlines and other control characters, which a JSON string may not contain, so a single multi-line message makes the whole array unparseable.
-The projection therefore asks for ids, the state word, booleans, and two short names (`host`, `program`) only, and must never be extended with a field that can hold text a human or a model wrote.
+The projection therefore asks only for the fields the adapter reads (`pane`, `state`, `alive`), and must never be extended with a field that can hold text a human or a model wrote.
 The ids in the answer are quoted like every other tern id, and the displayed answer is never repaired: one that does not parse reads `unknown`.
 
 `native_state` keeps Tern's own words: `working` | `idle` | `waiting_input` | `unknown`.
@@ -165,7 +165,7 @@ The only sanctioned teardown is `tern_safe_kill_session <session_id> <want_name>
 
 - tern is experimental and has no dedicated real-backend CI lane.
 - Secondmate spawns are unsupported (`fm-spawn.sh` refuses `--secondmate` on `backend=tern`).
-- The away-mode `/afk` supervisor backend does not support tern; only `tmux` and `herdr` supervisor panes are accepted.
+- The away-mode `/afk` supervisor backend does not support tern; only `tmux`, `herdr`, and `rex` supervisor panes are accepted.
 - Native agent state requires a Tern window control endpoint; remote-host or headless daemon access that can `ls`/`capture` may still lack `ctl`.
 - Multiplexers swallow TSP: a Tern block hosting tmux or Herdr never shows native Tern agent state.
 - There is no verified native push-event wait (`tern events` is not treated as an agent-transition stream; `has_push` stays herdr-only).
