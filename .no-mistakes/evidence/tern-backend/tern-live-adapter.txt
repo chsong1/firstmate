@@ -1,0 +1,26 @@
+ok - container_ensure -> session 7868380086273 (fm-test-gate-2411173)
+create_task -> tab=7885559955457 block=7885559955458; tab title: null
+fm-firstmate-c4eb0a18-test-g1
+ok - target_exists with label
+ok - mismatched label refused
+--- raw 'tern capture --surfaces' output (first 200 bytes):
+user@calserver:/tmp$ echo composed-line-tern
+composed-line-tern
+user@calserver:/tmp$
+
+--- fm_backend_tern_capture 5 lines:
+user@calserver:/tmp$ echo composed-line-tern
+composed-line-tern
+user@calserver:/tmp$
+ok - capture normalized to screen text (not JSON)
+ok - visible_capture shows line
+composer_state=unknown agent_state=dead busy_state=unknown native=unknown
+tab title after rename: null
+hand-renamed
+error: tern block 7885559955458 in session 7868380086273 is no longer in a tab titled fm-firstmate-c4eb0a18-test-g1, so it cannot be verified as this task's endpoint; not closing it
+ok - kill refused renamed block (rc=1)
+ok - renamed block 7885559955458 still open (not closed)
+ok - kill after restoring title succeeds
+ok - block gone after kill; agent_state=missing
+ok - repeat kill idempotent
+ok - fm-test session removed; sessions now: ["Default","nia12-primary-c16c4b1ab7ad5e22"]

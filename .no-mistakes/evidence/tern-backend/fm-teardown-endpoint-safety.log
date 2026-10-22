@@ -2,7 +2,7 @@ ok - fm-teardown: missing, empty, malformed, ambiguous, and task-mismatched endp
 ok - fm-teardown: a concurrent lifecycle action refuses before mutation
 ok - fm-teardown: non-pool cleanup ignores unrelated task publication locks
 ok - fm-teardown: destructive cleanup serializes with metadata writers
-ok - cleanup identity: valid tmux, Herdr, Zellij, Orca, cmux, Paseo, and tern records validate while every empty backend target refuses
+ok - cleanup identity: valid tmux, Herdr, Zellij, Orca, cmux, Paseo, Rex, and tern records validate, inconsistent Rex records refuse, and every empty backend target refuses
 ok - cleanup identity: an Orca record's real composite worktree id validates while a separatorless or newline-carrying id refuses
 ok - tmux backend: direct empty target returns nonzero without invoking tmux
 ok - process cleanup: creation-time PID identity removes only the exact child and preserves the control child

@@ -18,6 +18,7 @@ ok - fm_backend_tern_target_ready: the expected label must equal this home's sco
 ok - fm_backend_tern_capture: 'tern capture <block-id> --scrollback --surfaces', trimmed to N lines locally
 ok - fm_backend_tern_capture: propagates a failing capture and never reads an absent block
 ok - fm_backend_tern_visible_capture: --surfaces without --scrollback, limited to the block's visible rows
+ok - fm_backend_tern_capture/visible_capture: a --surfaces JSON object yields its .text before the line trim; other output is kept raw
 ok - fm_backend_tern_send_literal: 'tern send <block> text TEXT' with no Enter, even for option-shaped text
 ok - fm_backend_tern_send_key: Enter/Escape/Esc/C-c/C-u map to tern's enter/escape/ctrl+c/ctrl+u chords
 ok - fm_backend_tern_send_key: a mismatched expected task label sends nothing
@@ -64,7 +65,6 @@ ok - fm_backend_validate_task_endpoint: tern records without an exact binding, w
 ok - fm-spawn.sh: refuses backend=tern for --secondmate spawns (no per-home lifecycle design is verified)
 ok - fm-spawn.sh --backend tern: writes backend/window/tern_*_id/endpoint_task_id with exact ids that pass cleanup validation
 ok - fm-spawn.sh --backend tern: a cleared allowlist launch keeps TERM_PROGRAM and the TERN_* identity, drops the rest, and invents nothing
-ok - fm-spawn.sh: only a tern task's floor retains TERM_PROGRAM; other backends need an explicit allowlist entry
 ok - tern_refuse_if_unsafe: accepts only a numeric id listed under exactly its fm-test- name; fails closed on empty, non-numeric, foreign, unlisted or unreadable
 ok - tern_refuse_if_unsafe: session ids above 2^53 are compared as exact integers
 ok - tern_refuse_if_unsafe: a session hosting $TERN_PANE is never torn down

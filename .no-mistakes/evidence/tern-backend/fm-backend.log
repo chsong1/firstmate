@@ -9,6 +9,7 @@ ok - fm_backend_detect: ancestry fallback stops undetected at launchd (a reparen
 ok - fm_backend_name: a fallback-detected cmux prints a NOTICE naming the fallback signal; the primary-marker notice is unchanged
 ok - fm_backend_name: verified Herdr and tmux stay silent while experimental cmux remains loud
 ok - fm_backend_detect/fm_backend_name: paseo is never auto-detected from PASEO_* markers or its bundle id (tmux default stays silent); only FM_BACKEND or config/backend select it
+ok - fm_backend_detect/fm_backend_name: TERM_PROGRAM=rex + REX_BLOCK -> rex (silent); nested tmux/herdr win; REX_BLOCK alone never selects rex; explicit config wins
 ok - fm_backend_detect/fm_backend_name: tern is never auto-detected from TERM_PROGRAM/TERN_PANE (tmux default stays silent, a nested tmux or herdr still detects itself); only FM_BACKEND or config/backend select it
 ok - fm_backend dispatch tables: tern requires tern+jq+treehouse, has visible capture, declares no push stream
 ok - fm_backend_name: an explicit FM_BACKEND or config/backend setting always wins over runtime auto-detection, including an ambient cmux marker
