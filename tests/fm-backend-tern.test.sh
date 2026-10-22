@@ -536,6 +536,30 @@ test_visible_capture_is_viewport_only() {
   pass "fm_backend_tern_visible_capture: --surfaces without --scrollback, limited to the block's visible rows"
 }
 
+test_capture_reads_text_from_a_surface_json_object() {
+  local dir out envelope
+  envelope=$(jq -cn --arg t $'line one\nline two\nline three\nline four' '{block: 1, text: $t}')
+
+  dir=$(new_case capture-json)
+  ls_with_block "$dir" 1
+  capture_ok "$dir" 2 "$envelope"
+  out=$( run_tern "$dir" 'fm_backend_tern_capture "$1" 2' "$TARGET" )
+  [ "$out" = $'line three\nline four' ] || fail "capture should trim the surface object's .text, not its JSON, got '$out'"
+
+  dir=$(new_case visible-capture-json)
+  ls_with_block "$dir" 1 2
+  capture_ok "$dir" 2 "$envelope"
+  out=$( run_tern "$dir" 'fm_backend_tern_visible_capture "$1"' "$TARGET" )
+  [ "$out" = $'line three\nline four' ] || fail "visible_capture should keep the last rows of .text, got '$out'"
+
+  dir=$(new_case capture-json-not-surface)
+  ls_with_block "$dir" 1
+  capture_ok "$dir" 2 '{"block":1,"text":7}'
+  out=$( run_tern "$dir" 'fm_backend_tern_capture "$1" 5' "$TARGET" )
+  [ "$out" = '{"block":1,"text":7}' ] || fail "output that is not a surface object must pass through unchanged, got '$out'"
+  pass "fm_backend_tern_capture/visible_capture: a --surfaces JSON object yields its .text before the line trim; other output is kept raw"
+}
+
 # --- send_literal / send_key / send_text_line -------------------------------------------------
 
 test_send_literal_types_without_enter() {
@@ -626,6 +650,12 @@ test_composer_state_verdicts_from_surface_capture() {
   capture_ok "$dir" 2 "$screen_pending"
   out=$( run_tern "$dir" 'fm_backend_tern_composer_state "$1"' "$TARGET" )
   [ "$out" = pending ] || fail "real composer text should read pending, got '$out'"
+
+  dir=$(new_case composer-json)
+  ls_with_block "$dir" 1
+  capture_ok "$dir" 2 "$(jq -cn --arg t "$screen_pending" '{block: 1, text: $t}')"
+  out=$( run_tern "$dir" 'fm_backend_tern_composer_state "$1"' "$TARGET" )
+  [ "$out" = pending ] || fail "a composer inside a --surfaces JSON object should read pending, got '$out'"
 
   dir=$(new_case composer-no-row)
   ls_with_block "$dir" 1
@@ -1685,6 +1715,7 @@ test_target_ready_checks_expected_label
 test_capture_passes_surfaces_and_scrollback_and_trims_locally
 test_capture_fails_when_capture_fails_or_target_absent
 test_visible_capture_is_viewport_only
+test_capture_reads_text_from_a_surface_json_object
 test_send_literal_types_without_enter
 test_send_key_normalizes_firstmate_vocabulary
 test_send_key_rejects_label_mismatch

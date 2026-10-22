@@ -48,11 +48,13 @@
 # state) on the probing session's own block:
 #   - `tern capture` of a block that draws natively through the Tern Surface
 #     Protocol (an omp session) returns NOTHING for plain and --ansi captures.
-#     `--surfaces` returns the surface's main-region text (the transcript),
-#     byte-identical with and without --scrollback, and does not contain omp's
-#     composer. Every capture therefore passes --surfaces; the composer
-#     classifier cannot see an omp composer on tern, so the native agent state
-#     below is the only submit proof for it. Capture is plain text (styled=0).
+#     `--surfaces` returns a JSON object {"block","text"} whose `text` is the
+#     surface's main-region text (the transcript), byte-identical with and
+#     without --scrollback, and does not contain omp's composer. Every capture
+#     therefore passes --surfaces and reads `.text` (raw output that is not
+#     that object is used as is); the composer classifier cannot see an omp
+#     composer on tern, so the native agent state below is the only submit
+#     proof for it. Capture is plain text (styled=0).
 #   - Because --scrollback changes nothing for a surface, a viewport read of a
 #     surface block is its WHOLE transcript. visible_capture and the composer
 #     read are therefore trimmed to the block's `rows` from `tern ls --json`.
@@ -480,6 +482,18 @@ fm_backend_tern_send_text_line() {  # <target> <text> [expected-label]
   fm_backend_tern_cli run "$FM_BACKEND_TERN_SESSION_ID/$FM_BACKEND_TERN_BLOCK_ID" "$2" >/dev/null 2>&1
 }
 
+# fm_backend_tern_surface_text: the screen text of one `tern capture --surfaces`
+# output - `.text` when the output is a single JSON object with a string
+# `text`, otherwise the raw output unchanged.
+fm_backend_tern_surface_text() {  # <capture-output>
+  local text
+  if text=$(printf '%s' "$1" | jq -sj 'if length == 1 and (.[0] | type) == "object" and (.[0].text | type) == "string" then .[0].text else error("not a surface object") end' 2>/dev/null); then
+    printf '%s' "$text"
+  else
+    printf '%s' "$1"
+  fi
+}
+
 # fm_backend_tern_capture: bounded plain-text capture. --scrollback is this
 # adapter's explicit opt-in to history and --surfaces is mandatory (see the
 # header: a natively drawn block captures empty without it). tern has no line
@@ -489,6 +503,7 @@ fm_backend_tern_capture() {  # <target> <lines> [expected-label]
   fm_backend_tern_target_ready "$1" "${3:-}" || return 1
   case "$lines" in ''|*[!0-9]*) lines=200 ;; esac
   out=$(fm_backend_tern_cli capture "$FM_BACKEND_TERN_SESSION_ID/$FM_BACKEND_TERN_BLOCK_ID" --scrollback --surfaces 2>/dev/null) || return 1
+  out=$(fm_backend_tern_surface_text "$out")
   printf '%s' "$out" | tail -n "$lines"
 }
 
@@ -501,6 +516,7 @@ fm_backend_tern_visible_capture() {  # <target> [expected-label]
   local out
   fm_backend_tern_target_ready "$1" "${2:-}" || return 1
   out=$(fm_backend_tern_cli capture "$FM_BACKEND_TERN_SESSION_ID/$FM_BACKEND_TERN_BLOCK_ID" --surfaces 2>/dev/null) || return 1
+  out=$(fm_backend_tern_surface_text "$out")
   if [ -n "$FM_BACKEND_TERN_ROWS" ]; then
     printf '%s' "$out" | tail -n "$FM_BACKEND_TERN_ROWS"
   else

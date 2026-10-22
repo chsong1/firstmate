@@ -42,7 +42,7 @@ A tmux server or Herdr client started inside a block inherits all of them, so th
 Reading them as a selection would make tern an ambient default, which "Authority is explicit and never inferred" rules out; `fm_backend_detect` therefore ignores them.
 
 The markers are still useful once tern has been selected explicitly.
-A cleared-environment launch keeps the `TERN_*` identity and, on a `backend=tern` task only, `TERM_PROGRAM` (see [`configuration.md`](configuration.md#variables-retained-and-where-values-come-from)), and `tests/tern-test-safety.sh` refuses to close a session that hosts the caller's own `$TERN_PANE` block.
+A cleared-environment launch keeps the `TERN_*` identity and, like every backend's launch floor, whatever `TERM_PROGRAM` the pane has, which is `tern` inside a Tern block (see [`configuration.md`](configuration.md#variables-retained-and-where-values-come-from)), and `tests/tern-test-safety.sh` refuses to close a session that hosts the caller's own `$TERN_PANE` block.
 
 ## Task shape and metadata
 
@@ -76,6 +76,7 @@ An inventory that cannot be read, a block that moved sessions, or a title mismat
 - History/`capture` uses `tern capture <session>/<block> --scrollback --surfaces`, then trims locally to the requested line bound.
 - Viewport/`visible_capture` and composer reads use `tern capture <session>/<block> --surfaces` (no `--scrollback`), then trim to the block's `rows` from inventory when known.
 - A Tern Surface Protocol (TSP) native agent surface returns empty under plain/`--ansi` capture; `--surfaces` is required for transcript text.
+- `--surfaces` prints a JSON object `{"block","text"}`; both capture paths read its `.text` before any line trim, and use output that is not such an object unchanged.
 - Composer capabilities are deliberately conservative with no native identity or styled-classifier proof: `styled=0`, `cursor=0`, `identity=0`, with `rows=` from `FM_COMPOSER_CAPTURE_LINES`.
   Native `program` names were not proven as harness identity, and `--ansi` of a natively drawn block is empty on the measured host, so styling and identity are not advertised and no speculative identity plumbing is claimed.
   Without styling or identity, the shared classifier degrades a glyph row carrying trailing text to `unknown` rather than treating an idle suggestion as typed input.
