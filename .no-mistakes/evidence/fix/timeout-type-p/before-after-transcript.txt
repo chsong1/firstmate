@@ -1,0 +1,38 @@
+== lib: /home/user/.no-mistakes/evidence/01M5GWAXH0NEVD7A9DJGSTB7EY/base-fm-timeout-lib.sh
+-- S1 shadowed timeout/gtimeout functions: stdout + exit 7 preserved
+mechanism=timeout
+out=[shadowed-timeout] rc=0
+-- S2 no shadow: bound still fires (sleep 10 under 1s)
+rc=124 elapsed=1s timed_out=yes
+-- S3 shadowed: bound still fires
+shadowed
+rc=0 elapsed=0s
+-- S4 fm_exec_timed with shadow function exported, stdout+status
+out=[exec-out] rc=5
+-- S5 fallback: PATH without timeout -> perl
+mechanism=timeout
+shadowed
+rc=0
+-- S6 override bash
+mechanism=bash
+ov-out
+rc=4
+
+== lib: /home/user/.no-mistakes/worktrees/acac604291fd/01M5GWAXH0NEVD7A9DJGSTB7EY/bin/fm-timeout-lib.sh
+-- S1 shadowed timeout/gtimeout functions: stdout + exit 7 preserved
+mechanism=timeout
+out=[hello-stdout] rc=7
+-- S2 no shadow: bound still fires (sleep 10 under 1s)
+rc=124 elapsed=1s timed_out=yes
+-- S3 shadowed: bound still fires
+rc=124 elapsed=1s
+-- S4 fm_exec_timed with shadow function exported, stdout+status
+out=[exec-out] rc=5
+-- S5 fallback: PATH without timeout -> perl
+mechanism=perl
+fb-out
+rc=3
+-- S6 override bash
+mechanism=bash
+ov-out
+rc=4

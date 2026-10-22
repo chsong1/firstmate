@@ -1,0 +1,28 @@
+Working...
+BASE
+```text
+type -a timeout:
+timeout is a shell builtin
+timeout is /usr/bin/timeout
+timeout is /bin/timeout
+command -v timeout: timeout
+mechanism=timeout
+wait: no such job: 
+rc=1
+wait: no such job: 
+hello-stdout
+bound rc=1 elapsed=0s
+```
+
+HEAD
+```text
+type -a timeout:
+timeout is a shell builtin
+timeout is /usr/bin/timeout
+timeout is /bin/timeout
+command -v timeout: timeout
+mechanism=timeout
+hello-stdout
+rc=7
+bound rc=124 elapsed=1s
+```

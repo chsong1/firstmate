@@ -1,0 +1,2 @@
+FAIL new-test assertion against /home/user/.no-mistakes/evidence/01M5GWAXH0NEVD7A9DJGSTB7EY/base-fm-timeout-lib.sh (rc=0 out=shadowed-timeout)
+PASS new-test assertion against /home/user/.no-mistakes/worktrees/acac604291fd/01M5GWAXH0NEVD7A9DJGSTB7EY/bin/fm-timeout-lib.sh (rc=7 out=hello-stdout)
