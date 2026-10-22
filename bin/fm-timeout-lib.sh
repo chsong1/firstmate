@@ -152,15 +152,6 @@ fm_run_bash_timeout() {
 fm_run_external_timeout() {
   local runner=$1 seconds=$2 status_file runner_pid runner_rc command_rc
   shift 2
-  # A slashless name is a builtin or function in an omp shell. Resolve it
-  # here so the backgrounded command is the executable path either way.
-  case "$runner" in
-    */*) ;;
-    *)
-      runner=$(type -P "$runner" 2>/dev/null) || true
-      [ -n "$runner" ] && [ -x "$runner" ] || return 127
-      ;;
-  esac
   status_file=$(mktemp "${TMPDIR:-/tmp}/fm-timeout-status.XXXXXX" 2>/dev/null) || return 124
   # Run the executable path asynchronously (never a bare name: that is the omp
   # timeout builtin, and backgrounding it leaves $! empty) so its pid - also
