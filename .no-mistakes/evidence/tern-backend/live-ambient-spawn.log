@@ -1,0 +1,4 @@
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.pdUt0a
+warning: /tmp/fm-lab.pdUt0a/data/ternambient2/launch-brief.md records no ship branch; defaulting to legacy branch fm/ternambient2
+warning: /tmp/fm-lab.pdUt0a/data/ternambient2/launch-brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches
+spawned ternambient2 harness=claude kind=ship mode=no-mistakes yolo=off window=firstmate:fm-ternambient2 worktree=/tmp/fm-lab.pdUt0a/pool/.treehouse/demo-fecaf7/1/demo

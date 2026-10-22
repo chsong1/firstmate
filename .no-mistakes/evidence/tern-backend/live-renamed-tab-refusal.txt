@@ -1,0 +1,26 @@
+# Renamed-tab refusal: rename the task tab by hand, then teardown
+$ tern rename 21474836482 hand-renamed
+rc=0
+$ tern ls (tabs)
+[{"id":8589934594,"name":null,"blocks":[8589934595]},{"id":21474836481,"name":"hand-renamed","blocks":[21474836482]}]
+$ fm-teardown.sh ternexplicit1 --force
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.pdUt0a
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+teardown: reaping leaked worktree process(es) for ternexplicit1: 2495819 2497408
+teardown: force-killing leaked worktree process(es) for ternexplicit1: 2495819
+A new version of treehouse is available: v3.1.3 → v3.1.5
+Run "treehouse update" to update
+
+🌳 Worktree returned to pool.
+error: tern block 21474836482 in session 8589934593 is no longer in a tab titled fm-firstmate-c4eb0a18-ternexplicit1, so it cannot be verified as this task's endpoint; not closing it
+error: the tern endpoint 8589934593:21474836482 for ternexplicit1 could not be closed, so it may still be live.
+error: --force authorizes continuing past a close that failed, so this cleanup proceeds toward removing the task's records; reconcile 8589934593:21474836482 yourself, because nothing here can still be relied on to name it.
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+demo: already current
+teardown ternexplicit1 complete (window 8589934593:21474836482, worktree /home/user/.treehouse/demo-fecaf7/1/demo)
+Backlog: ternexplicit1 just finished (this home keeps no markdown backlog at /tmp/fm-lab.pdUt0a/data/backlog.md). Update /tmp/fm-lab.pdUt0a/data/backlog.md - move ternexplicit1 to Done, keep Done to the 10 most recent, then re-scan Queued and dispatch only work whose blockers are gone and date is due.
+rc=0
+$ tern ls after (tabs)
+[{"id":8589934594,"name":null,"blocks":[8589934595]},{"id":21474836481,"name":"hand-renamed","blocks":[21474836482]}]
+$ state/ternexplicit1.meta still present?
+ls: cannot access '/tmp/fm-lab.pdUt0a/state/ternexplicit1.meta': No such file or directory

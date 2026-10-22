@@ -1,0 +1,16 @@
+# Restore the task tab title, then teardown closes exactly the task block
+rename rc=0
+$ fm-teardown.sh ternconfig2
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.pdUt0a
+A new version of treehouse is available: v3.1.3 → v3.1.5
+Run "treehouse update" to update
+
+🌳 Worktree returned to pool.
+demo: already current
+teardown ternconfig2 complete (window 8589934593:193273528322, worktree /home/user/.treehouse/demo-fecaf7/1/demo)
+Backlog: ternconfig2 just finished (this home keeps no markdown backlog at /tmp/fm-lab.pdUt0a/data/backlog.md). Update /tmp/fm-lab.pdUt0a/data/backlog.md - move ternconfig2 to Done, keep Done to the 10 most recent, then re-scan Queued and dispatch only work whose blockers are gone and date is due.
+rc=0
+$ tern ls after
+[{"name":"fm-firstmate-c4eb0a18","tabs":[{"id":8589934594,"name":null,"blocks":[8589934595]}]}]
+$ meta present?
+ls: cannot access '/tmp/fm-lab.pdUt0a/state/ternconfig2.meta': No such file or directory

@@ -1,0 +1,27 @@
+# Renamed-tab refusal WITHOUT --force (config/backend=tern task ternconfig2)
+$ tern rename 193273528322 hand-renamed
+rc=0
+[{"id":8589934594,"name":null,"blocks":[8589934595]},{"id":193273528321,"name":"hand-renamed","blocks":[193273528322]}]
+$ fm-teardown.sh ternconfig2
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.pdUt0a
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+teardown: reaping leaked worktree process(es) for ternconfig2: 2506129 2507607
+teardown: force-killing leaked worktree process(es) for ternconfig2: 2506129
+A new version of treehouse is available: v3.1.3 → v3.1.5
+Run "treehouse update" to update
+
+🌳 Worktree returned to pool.
+error: tern block 193273528322 in session 8589934593 is no longer in a tab titled fm-firstmate-c4eb0a18-ternconfig2, so it cannot be verified as this task's endpoint; not closing it
+error: the tern endpoint 8589934593:193273528322 for ternconfig2 could not be closed, so it may still be live.
+error: stopping this cleanup without removing the task's records, so the record naming 8589934593:193273528322 is still here to reconcile from.
+error: that retention is not durable across a session start: if this task carries a backlog transition, the next session replays its pending close and removes the retained record, so reconcile the surviving endpoint yourself rather than trusting the retention.
+error: rerun teardown once the close can succeed, or rerun with --force to discard this task's records deliberately.
+rc=1
+$ tern ls after
+[{"id":8589934594,"name":null,"blocks":[8589934595]},{"id":193273528321,"name":"hand-renamed","blocks":[193273528322]}]
+$ state/ternconfig2.meta after (endpoint fields)
+window=8589934593:193273528322
+backend=tern
+tern_session_id=8589934593
+tern_tab_id=193273528321
+tern_block_id=193273528322

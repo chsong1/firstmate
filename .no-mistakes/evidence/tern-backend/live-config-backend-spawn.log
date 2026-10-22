@@ -1,0 +1,11 @@
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.pdUt0a
+WARNING: watcher still down (same stale episode; last beat: never, grace 300s) - full banner already printed this episode.
+warning: /tmp/fm-lab.pdUt0a/data/ternconfig2/launch-brief.md records no ship branch; defaulting to legacy branch fm/ternconfig2
+warning: /tmp/fm-lab.pdUt0a/data/ternconfig2/launch-brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches
+spawned ternconfig2 harness=claude kind=ship mode=no-mistakes yolo=off window=8589934593:193273528322 worktree=/home/user/.treehouse/demo-fecaf7/1/demo
+window=8589934593:193273528322
+backend=tern
+tern_session_id=8589934593
+tern_tab_id=193273528321
+tern_block_id=193273528322
+[{"id":8589934594,"name":null,"blocks":[8589934595]},{"id":193273528321,"name":"fm-firstmate-c4eb0a18-ternconfig2","blocks":[193273528322]}]

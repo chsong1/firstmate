@@ -1,0 +1,5 @@
+$ tmux (lab socket) list-windows -a
+firstmate:0: bash* (1 panes) [80x24] 
+firstmate:1: fm-ternambient1 (1 panes) [80x24] 
+$ tern ls --json (session names)
+[{"id":1,"name":"Default"}]

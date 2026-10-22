@@ -1,0 +1,17 @@
+# --backend tern flag (no FM_BACKEND, no config/backend)
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.pdUt0a
+warning: /tmp/fm-lab.pdUt0a/data/ternflag3/launch-brief.md records no ship branch; defaulting to legacy branch fm/ternflag3
+warning: /tmp/fm-lab.pdUt0a/data/ternflag3/launch-brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches
+spawned ternflag3 harness=claude kind=ship mode=no-mistakes yolo=off window=8589934593:369367187458 worktree=/home/user/.treehouse/demo-fecaf7/1/demo
+rc=0
+window=8589934593:369367187458
+backend=tern
+tern_session_id=8589934593
+tern_tab_id=369367187457
+tern_block_id=369367187458
+[{"id":8589934594,"name":null},{"id":369367187457,"name":"fm-firstmate-c4eb0a18-ternflag3"}]
+$ fm-teardown.sh ternflag3
+teardown: reaping leaked worktree process(es) for ternflag3: 2514284 2515735
+teardown: force-killing leaked worktree process(es) for ternflag3: 2514284
+teardown ternflag3 complete (window 8589934593:369367187458, worktree /home/user/.treehouse/demo-fecaf7/1/demo)
+[{"id":8589934594,"name":null}]

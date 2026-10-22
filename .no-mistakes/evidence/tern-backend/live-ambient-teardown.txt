@@ -1,0 +1,3 @@
+teardown: reaping leaked worktree process(es) for ternambient2: 2490238 2491249
+teardown: force-killing leaked worktree process(es) for ternambient2: 2490238
+teardown ternambient2 complete (window firstmate:fm-ternambient2, worktree /tmp/fm-lab.pdUt0a/pool/.treehouse/demo-fecaf7/1/demo)

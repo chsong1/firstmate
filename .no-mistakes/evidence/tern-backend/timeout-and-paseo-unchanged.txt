@@ -1,0 +1,6 @@
+$ git merge-base HEAD origin/main
+df9eb03a5ba937288c88a7941d6b827c03b57cd4
+df9eb03a5ba937288c88a7941d6b827c03b57cd4
+$ git diff --stat origin/main HEAD -- (timeout library + tests)
+(empty = identical to upstream main)
+$ paseo files changed?

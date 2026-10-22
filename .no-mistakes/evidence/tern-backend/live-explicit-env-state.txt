@@ -1,0 +1,38 @@
+# FM_BACKEND=tern explicit, private tern daemon
+fm-gate-refuse: gate agent lifecycle permitted only against lab home /tmp/fm-lab.pdUt0a
+warning: /tmp/fm-lab.pdUt0a/data/ternexplicit1/launch-brief.md records no ship branch; defaulting to legacy branch fm/ternexplicit1
+warning: /tmp/fm-lab.pdUt0a/data/ternexplicit1/launch-brief.md records no delivery contract line (scaffolded before ship briefs recorded one); launching on the explicit --mode no-mistakes - confirm its definition of done matches
+spawned ternexplicit1 harness=claude kind=ship mode=no-mistakes yolo=off window=8589934593:21474836482 worktree=/home/user/.treehouse/demo-fecaf7/1/demo
+$ cat state/ternexplicit1.meta
+window=8589934593:21474836482
+endpoint_task_id=ternexplicit1
+worktree=/home/user/.treehouse/demo-fecaf7/1/demo
+project=/tmp/fm-lab.pdUt0a/projects/demo
+harness=claude
+kind=ship
+mode=no-mistakes
+yolo=off
+branch=fm/ternexplicit1
+tasktmp=/tmp/fm-ternexplicit1
+model=default
+effort=default
+busy_gen=g1792642322.2496257.25274
+spawn_gen=s1792642323.2494759.22129
+backend=tern
+tern_session_id=8589934593
+tern_tab_id=21474836481
+tern_block_id=21474836482
+$ tern ls --json (private daemon)
+{"id":8589934593,"name":"fm-firstmate-c4eb0a18","tabs":[{"id":8589934594,"name":null,"blocks":[{"id":8589934595,"cwd":"/home/user/.no-mistakes/worktrees/acac604291fd/01M5GW8JR2XA7RMSVAKPPPRBG2","program":"/bin/bash"}]},{"id":21474836481,"name":"fm-firstmate-c4eb0a18-ternexplicit1","blocks":[{"id":21474836482,"cwd":"/tmp/fm-lab.pdUt0a/projects/demo","program":"/bin/bash"}]}]}
+$ tern capture (task block)
+tern capture BLOCK [--html|--ansi] [--scrollback] [--surfaces]
+
+BLOCK is an id, @focused, a title or a program name, as SESSION/BLOCK to
+     Light mode (ANSI colors only)
+ ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+  1  function greet() {
+  2 -  console.log("Hello, World!");
+  2 +  console.log("Hello, Claude!");
+  3  }
+ ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+  Syntax theme: Monokai Extended (ctrl+t to disable)
