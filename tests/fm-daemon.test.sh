@@ -77,7 +77,7 @@ test_afk_start_refuses_tern_supervisor_backend() {
   out=$(FM_STATE_OVERRIDE="$state" FM_SUPERVISOR_BACKEND=tern "$AFK_START" 2>&1)
   status=$?
 
-  [ "$status" -ne 0 ] || fail "fm-afk-start.sh should refuse a tern supervisor backend (away mode supports only tmux and herdr)"
+  [ "$status" -ne 0 ] || fail "fm-afk-start.sh should refuse a tern supervisor backend (away mode supports only tmux, herdr, and rex)"
   case "$out" in
     *"does not support supervisor backend 'tern'"*|*"no non-visible daemon-launch primitive for backend 'tern'"*) : ;;
     *) fail "away mode did not name tern as an unsupported supervisor backend: $out" ;;

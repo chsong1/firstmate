@@ -170,13 +170,10 @@ ctl_down() {
 state_text() { jq -nc --arg t "$3" '{carly:{last_tool:{text:$t}}}' > "$1/responses/$2.out"; }
 
 # agent_json <pane> <state> [alive]: one agent entry in the shape the adapter's Lua
-# projection (FM_BACKEND_TERN_AGENTS_LUA) answers: the ids as RAW integers, the state
-# word, booleans and two short names, and no free text.
+# projection (FM_BACKEND_TERN_AGENTS_LUA) answers: the pane id as a RAW integer, the
+# state word and the alive boolean, and no free text.
 agent_json() {  # <pane> <state> [alive]
-  local pane=$1 state=$2 alive=${3:-true} busy=false
-  [ "$state" = working ] && busy=true
-  printf '{"pane":%s,"session":%s,"tab":%s,"host":"unit-host","state":"%s","alive":%s,"busy":%s,"program":"omp"}' \
-    "$pane" "$SID" "$TAB" "$state" "$alive" "$busy"
+  printf '{"pane":%s,"state":"%s","alive":%s}' "$1" "$2" "${3:-true}"
 }
 
 # displayed_agent_json <pane> <state> <line-break>: the same agent as the window DISPLAYS it
@@ -869,11 +866,11 @@ test_native_state_parses_the_projected_answer_and_keeps_64_bit_ids() {
   dir=$(new_case projected-agents-json)
   ctl_ok "$dir" 1
   state_agents "$dir" 2 "$(agent_json "$BLK_NEIGHBOR" idle)" "$(agent_json "$BLK" working)"
-  out=$( run_tern "$dir" 'fm_backend_tern_agents_json' ) || fail "the projected answer of ids, states and booleans must read as an agent array"
-  rows=$(printf '%s' "$out" | jq -r '.[] | [.state, .pane, .session, .tab] | join(" ")') \
+  out=$( run_tern "$dir" 'fm_backend_tern_agents_json' ) || fail "the projected answer of pane ids, states and alive flags must read as an agent array"
+  rows=$(printf '%s' "$out" | jq -r '.[] | [.state, .pane] | join(" ")') \
     || fail "agents_json must print a JSON agent array, got: $out"
-  assert_equals "idle $BLK_NEIGHBOR $SID $TAB"$'\n'"working $BLK $SID $TAB" "$rows" \
-    "every id of the projected entries must come back as its exact decimal string (a JSON double would round them)"
+  assert_equals "idle $BLK_NEIGHBOR"$'\n'"working $BLK" "$rows" \
+    "every pane id of the projected entries must come back as its exact decimal string (a JSON double would round them)"
 
   dir=$(new_case projected-native-state)
   ls_with_block "$dir" 1
