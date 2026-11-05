@@ -1,0 +1,9 @@
+status lines per task: 40081 (4 tasks)
+drain rc=0 (warms cursors)
+before snapshot rc=0 ms=13366
+after snapshot rc=0 ms=7153
+before snapshot rc=0 ms=13013
+after snapshot rc=0 ms=7083
+before home-summary-refresh rc=0 ms=8675 decisions=["t1:old-t1","t1:fresh","t2:old-t2","t3:old-t3","t4:old-t4"]
+after home-summary-refresh rc=0 ms=2427 decisions=["t1:old-t1","t1:fresh","t2:old-t2","t3:old-t3","t4:old-t4"]
+SAME_OPEN_SET=yes [{"id":"t1","od":["fresh","old-t1"]},{"id":"t2","od":["old-t2"]},{"id":"t3","od":["old-t3"]},{"id":"t4","od":["old-t4"]}]

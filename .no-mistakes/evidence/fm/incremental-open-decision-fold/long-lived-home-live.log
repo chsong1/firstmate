@@ -1,0 +1,39 @@
+== log sizes
+   9003 /tmp/fm-lab.wge7zF/state/t1.status
+   9003 /tmp/fm-lab.wge7zF/state/t2.status
+   9003 /tmp/fm-lab.wge7zF/state/t3.status
+  27009 total
+== real drain warms cursors (bin/fm-wake-drain.sh)
+drain rc=0
+OPEN DECISIONS (still open, folded from the durable status logs - not just the latest line):
+t1 [key=old-t1] needs-decision: buried decision from day one
+t2 [key=old-t2] needs-decision: buried decision from day one
+t3 [key=old-t3] needs-decision: buried decision from day one
+OPEN DECISIONS: close one by answering it: bin/fm-send.sh <task> --resolve-key <key> '<answer>'
+OPEN DECISIONS: <key> is the [key=...] printed before the verb; a token inside a note is prose, not a key.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+●  WATCHER DOWN - SUPERVISION IS OFF
+148 /tmp/fm-lab.wge7zF/state/.t1.open-decisions-cursor
+148 /tmp/fm-lab.wge7zF/state/.t2.open-decisions-cursor
+148 /tmp/fm-lab.wge7zF/state/.t3.open-decisions-cursor
+== after: snapshot on warm cursor
+rc=0 ms=4441
+== before (base commit): snapshot
+rc=0 ms=4843
+after : [{"id":"t1","od":[{"key":"old-t1","verb":"needs-decision"}]},{"id":"t2","od":[{"key":"old-t2","verb":"needs-decision"}]},{"id":"t3","od":[{"key":"old-t3","verb":"needs-decision"}]}]
+before: [{"id":"t1","od":[{"key":"old-t1","verb":"needs-decision"}]},{"id":"t2","od":[{"key":"old-t2","verb":"needs-decision"}]},{"id":"t3","od":[{"key":"old-t3","verb":"needs-decision"}]}]
+SAME_SET=yes
+CURSOR_UNCHANGED=yes
+== appends after drain: new decision on t1, resolve old-t2
+[{"id":"t1","od":[{"key":"fresh-t1","verb":"needs-decision"},{"key":"old-t1","verb":"needs-decision"}]},{"id":"t2","od":[]},{"id":"t3","od":[{"key":"old-t3","verb":"needs-decision"}]}]
+[{"id":"t1","od":[{"key":"fresh-t1","verb":"needs-decision"},{"key":"old-t1","verb":"needs-decision"}]},{"id":"t2","od":[]},{"id":"t3","od":[{"key":"old-t3","verb":"needs-decision"}]}]
+CURSOR_UNCHANGED=yes
+== adversarial: corrupt t3 cursor, truncate+rewrite t1 log
+[{"id":"t1","od":[{"key":"rewritten-t1","verb":"needs-decision"}]},{"id":"t2","od":[]},{"id":"t3","od":[{"key":"old-t3","verb":"needs-decision"}]}]
+[{"id":"t1","od":[{"key":"rewritten-t1","verb":"needs-decision"}]},{"id":"t2","od":[]},{"id":"t3","od":[{"key":"old-t3","verb":"needs-decision"}]}]
+CURSOR_UNCHANGED=yes
+== home summary refresh (real producer), timed
+rc=0 ms=1058
+{"schema":"fm-secondmate-home-summary.v1","decisions":[{"id":"t1","key":"rewritten-t1","verb":"needs-decision","summary":"after truncation","reason":null,"source":"status"},{"id":"t3","key":"old-t3","verb":"needs-decision","summary":"buried decision from day one","reason":null,"source":"status"}]}
+
+no leftover span tmp files

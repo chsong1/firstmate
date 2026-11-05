@@ -16,3 +16,8 @@ ok - a failed read with no cursor falls back to the capture
 ok - bytes appended after the capture stay out of the published set
 ok - a cursor ahead of the capture falls back to the captured set
 FM_TEST_COMPLETE
+
+real	0m18.370s
+user	0m9.237s
+sys	0m11.338s
+exit=0
