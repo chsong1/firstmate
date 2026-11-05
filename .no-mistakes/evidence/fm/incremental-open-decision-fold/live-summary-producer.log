@@ -1,0 +1,3 @@
+target producer exit=0 -> {"counts":2,"decisions":[{"id":"t1","key":"old-ask","verb":"needs-decision"},{"id":"t1","key":"fresh","verb":"needs-decision"}],"omitted":[]}
+cursor unchanged by producer: yes
+base producer exit=0 -> {"counts":2,"decisions":[{"id":"t1","key":"old-ask","verb":"needs-decision"},{"id":"t1","key":"fresh","verb":"needs-decision"}],"omitted":[]}

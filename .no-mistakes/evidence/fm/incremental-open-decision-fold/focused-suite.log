@@ -1,0 +1,18 @@
+1..16
+ok - an absent cursor folds the whole log and the snapshot writes no cursor
+ok - a current cursor folds only appended bytes and the snapshot leaves it untouched
+ok - stale, replaced, and ahead cursors refold read-only and match the whole-file fold
+ok - an unusable cursor folds the capture instead of refolding incrementally
+ok - every corrupt cursor shape refolds read-only and matches the whole-file fold
+ok - invalid UTF-8 and reserved-key lines match the whole-file fold
+ok - an unreadable span falls back to the capture instead of publishing the stale set
+ok - a concurrent cursor advance leaves the reader's set correct and the newer cursor in place
+ok - the summary producer publishes the whole-file set from a bounded fold
+ok - a task respawned before its capture publishes no foreign-generation decision
+ok - a task respawned after its capture still publishes the captured generation's set
+ok - a task respawned inside its fold still publishes the captured generation's set
+ok - a log retired after its capture still publishes the captured set
+ok - a failed read with no cursor falls back to the capture
+ok - bytes appended after the capture stay out of the published set
+ok - a cursor ahead of the capture falls back to the captured set
+FM_TEST_COMPLETE

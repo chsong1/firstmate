@@ -1,0 +1,26 @@
+== status log: 20061 lines, 390894 bytes
+== no cursor yet (real drain never ran)
+target: ["api-shape","k10500","k11500","k12500","k13500","k14500","k1500","k15500","k16500","k17500","k18500","k19500","k2500","k3500","k4500","k500","k5500","k6500","k7500","k8500","k9500"]
+base:   ["api-shape","k10500","k11500","k12500","k13500","k14500","k1500","k15500","k16500","k17500","k18500","k19500","k2500","k3500","k4500","k500","k5500","k6500","k7500","k8500","k9500"]
+cursor present after snapshot? no
+== real fm-wake-drain.sh runs (warms the cursor)
+drain exit=0 cursor present? yes
+== appended 'fresh' open + api-shape resolved after drain
+target: ["fresh","k10500","k11500","k12500","k13500","k14500","k1500","k15500","k16500","k17500","k18500","k19500","k2500","k3500","k4500","k500","k5500","k6500","k7500","k8500","k9500"]  (2456 ms)
+base:   ["fresh","k10500","k11500","k12500","k13500","k14500","k1500","k15500","k16500","k17500","k18500","k19500","k2500","k3500","k4500","k500","k5500","k6500","k7500","k8500","k9500"]  (3076 ms)
+bytes folded by target snapshot: 83 of 390977
+sets identical: yes
+cursor unchanged by snapshot: yes
+stray files beside status: none
+== summary producer (fm-home-summary-refresh.sh)
+exit=0
+[{"id":"t1","key":"k500"},{"id":"t1","key":"k1500"},{"id":"t1","key":"k2500"},{"id":"t1","key":"k3500"},{"id":"t1","key":"k4500"},{"id":"t1","key":"k5500"},{"id":"t1","key":"k6500"},{"id":"t1","key":"k7500"},{"id":"t1","key":"k8500"},{"id":"t1","key":"k9500"},{"id":"t1","key":"k10500"},{"id":"t1","key":"k11500"},{"id":"t1","key":"k12500"},{"id":"t1","key":"k13500"},{"id":"t1","key":"k14500"},{"id":"t1","key":"k15500"},{"id":"t1","key":"k16500"},{"id":"t1","key":"k17500"},{"id":"t1","key":"k18500"},{"id":"t1","key":"k19500"}]
+cursor unchanged by producer: yes
+== adversarial: truncate/replace the log under the cursor
+target: ["after-truncate"]
+base:   ["after-truncate"]
+cursor unchanged: yes
+== adversarial: drain advances cursor past the capture mid-run (tmux wrapper runs append+drain)
+target: ["captured-ask","captured-two"]  hook ran: yes
+expected capture set: ["captured-ask","captured-two"]
+live log now folds to: captured-two post-capture 
