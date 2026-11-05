@@ -1,0 +1,30 @@
+== status log: 6003 lines, 198132 bytes
+== running real bin/fm-wake-drain.sh in the lab to warm the drain cursor
+drain exit=0
+OPEN DECISIONS (still open, folded from the durable status logs - not just the latest line):
+t1 [key=api-shape] needs-decision: pick REST or RPC
+OPEN DECISIONS: close one by answering it: bin/fm-send.sh <task> --resolve-key <key> '<answer>'
+OPEN DECISIONS: <key> is the [key=...] printed before the verb; a token inside a note is prose, not a key.
+●━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+drain wrote cursor: version=9:secondmate offset=198132 
+== whole-file oracle (status_open_decisions):
+api-shape	needs-decision
+fresh	needs-decision
+== target snapshot hints.open_decisions:
+{"pending":true,"blocked":false,"open":[{"key":"api-shape","verb":"needs-decision"},{"key":"fresh","verb":"needs-decision"}]}
+== read probe (bytes the target fold read): 60  appended after drain cursor: 60
+== base snapshot hints.open_decisions:
+{"pending":true,"blocked":false,"open":[{"key":"api-shape","verb":"needs-decision"},{"key":"fresh","verb":"needs-decision"}]}
+== wall time: target 1.55s  base 1.66s
+== drain cursor unchanged by snapshot: yes
+== state/ changed:
+1a2
+> secondmate-summary-cache
+== home summary producer (target):
+exit=0
+[{"key":"api-shape","verb":"needs-decision"},{"key":"fresh","verb":"needs-decision"}]
+== adversarial: resolve 'fresh' after cursor, truncate-and-replace log
+["api-shape"]
+["newgen"]
+oracle: newgen
+== drain cursor still unchanged: yes
