@@ -1,0 +1,23 @@
+== seed drain cursors (writing-mode fold, the bin/fm-wake-drain.sh path)
+real	0m1.144s
+real	0m1.227s
+ 69185 /tmp/fm-lab.kTfPuM/state/sc2.status
+ 69221 /tmp/fm-lab.kTfPuM/state/sm1.status
+138406 total
+== base (4869cf58, whole-file fold)
+base: refresh rc=0 elapsed=0.79s
+[{"task":"sm1","key":"api-shape","verb":"needs-decision"},{"task":"sm1","key":"fresh-ask","verb":"needs-decision"}]
+[{"id":"sc2","open":[]},{"id":"sm1","open":["api-shape","fresh-ask"]}]
+== target (ed0450bc, read-only incremental fold)
+target: refresh rc=0 elapsed=0.94s
+[{"task":"sm1","key":"api-shape","verb":"needs-decision"},{"task":"sm1","key":"fresh-ask","verb":"needs-decision"}]
+[{"id":"sc2","open":[]},{"id":"sm1","open":["api-shape","fresh-ask"]}]
+drain cursors byte-identical after target runs: YES
+-- no stray span chunks beside status: 0
+published decisions_open identical base vs target: YES
+== adversarial: corrupt sm1 cursor, target run must fall back to whole fold and leave cursor alone
+[{"id":"sc2","open":[]},{"id":"sm1","open":["api-shape","fresh-ask"]}]
+corrupt cursor untouched: YES
+== adversarial: delete cursors, target run writes none
+[{"id":"sc2","open":[]},{"id":"sm1","open":["api-shape","fresh-ask"]}]
+cursors after run: 0

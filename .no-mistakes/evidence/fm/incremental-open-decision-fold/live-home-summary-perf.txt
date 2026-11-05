@@ -1,0 +1,5 @@
+status lines: 1501
+drain-path cursor seed:
+real	0m4.432s
+base: fm-home-summary-refresh rc=0 elapsed=11.64s decisions_open=["fresh-ask"]
+target: fm-home-summary-refresh rc=0 elapsed=6.02s decisions_open=["fresh-ask"]

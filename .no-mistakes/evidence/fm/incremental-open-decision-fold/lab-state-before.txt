@@ -1,0 +1,10 @@
+total 164
+drwxrwxr-x 2 user user  4096 Nov  5 14:58 .
+drwx------ 6 user user  4096 Nov  5 14:58 ..
+-rw------- 1 user user    16 Nov  5 14:58 .fm-lab-tmux-dir
+-rw-rw-r-- 1 user user   124 Nov  5 14:58 sc2.meta
+-rw-rw-r-- 1 user user   133 Nov  5 14:58 .sc2.open-decisions-cursor
+-rw-rw-r-- 1 user user 69185 Nov  5 14:58 sc2.status
+-rw-rw-r-- 1 user user   134 Nov  5 14:58 sm1.meta
+-rw-rw-r-- 1 user user   138 Nov  5 14:58 .sm1.open-decisions-cursor
+-rw-rw-r-- 1 user user 69221 Nov  5 14:58 sm1.status
